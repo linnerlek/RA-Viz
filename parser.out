@@ -1,0 +1,1266 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> query
+Rule 1     query -> expr SEMI
+Rule 2     expr -> proj_expr
+Rule 3     expr -> rename_expr
+Rule 4     expr -> union_expr
+Rule 5     expr -> minus_expr
+Rule 6     expr -> intersect_expr
+Rule 7     expr -> join_expr
+Rule 8     expr -> times_expr
+Rule 9     expr -> paren_expr
+Rule 10    expr -> select_expr
+Rule 11    expr -> ID
+Rule 12    proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+Rule 13    rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+Rule 14    attr_list -> ID
+Rule 15    attr_list -> COUNT LPARENT ID RPARENT
+Rule 16    attr_list -> SUM LPARENT ID RPARENT
+Rule 17    attr_list -> attr_list COMMA ID
+Rule 18    attr_list -> attr_list COMMA COUNT LPARENT ID RPARENT
+Rule 19    attr_list -> attr_list COMMA SUM LPARENT ID RPARENT
+Rule 20    union_expr -> expr UNION expr
+Rule 21    minus_expr -> expr MINUS expr
+Rule 22    intersect_expr -> expr INTERSECT expr
+Rule 23    join_expr -> expr JOIN expr
+Rule 24    times_expr -> expr TIMES expr
+Rule 25    paren_expr -> LPARENT expr RPARENT
+Rule 26    select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+Rule 27    condition -> simple_condition
+Rule 28    condition -> condition AND simple_condition
+Rule 29    simple_condition -> operand COMPARISION operand
+Rule 30    simple_condition -> operand LIKE operand
+Rule 31    operand -> ID
+Rule 32    operand -> STRING
+Rule 33    operand -> NUMBER
+
+Terminals, with rules where they appear
+
+AND                  : 28
+COMMA                : 17 18 19
+COMPARISION          : 29
+COUNT                : 15 18
+ID                   : 11 14 15 16 17 18 19 31
+INTERSECT            : 22
+JOIN                 : 23
+LBRACKET             : 12 13 26
+LIKE                 : 30
+LPARENT              : 12 13 15 16 18 19 25 26
+MINUS                : 21
+NUMBER               : 33
+PROJECT              : 12
+RBRACKET             : 12 13 26
+RENAME               : 13
+RPARENT              : 12 13 15 16 18 19 25 26
+SELECT               : 26
+SEMI                 : 1
+STRING               : 32
+SUM                  : 16 19
+TIMES                : 24
+UNION                : 20
+error                : 
+
+Nonterminals, with rules where they appear
+
+attr_list            : 12 13 17 18 19
+condition            : 26 28
+expr                 : 1 12 13 20 20 21 21 22 22 23 23 24 24 25 26
+intersect_expr       : 6
+join_expr            : 7
+minus_expr           : 5
+operand              : 29 29 30 30
+paren_expr           : 9
+proj_expr            : 2
+query                : 0
+rename_expr          : 3
+select_expr          : 10
+simple_condition     : 27 28
+times_expr           : 8
+union_expr           : 4
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . query
+    (1) query -> . expr SEMI
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    query                          shift and go to state 1
+    expr                           shift and go to state 2
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 1
+
+    (0) S' -> query .
+
+
+
+state 2
+
+    (1) query -> expr . SEMI
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            shift and go to state 17
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+
+state 3
+
+    (2) expr -> proj_expr .
+
+    SEMI            reduce using rule 2 (expr -> proj_expr .)
+    UNION           reduce using rule 2 (expr -> proj_expr .)
+    MINUS           reduce using rule 2 (expr -> proj_expr .)
+    INTERSECT       reduce using rule 2 (expr -> proj_expr .)
+    JOIN            reduce using rule 2 (expr -> proj_expr .)
+    TIMES           reduce using rule 2 (expr -> proj_expr .)
+    RPARENT         reduce using rule 2 (expr -> proj_expr .)
+
+
+state 4
+
+    (3) expr -> rename_expr .
+
+    SEMI            reduce using rule 3 (expr -> rename_expr .)
+    UNION           reduce using rule 3 (expr -> rename_expr .)
+    MINUS           reduce using rule 3 (expr -> rename_expr .)
+    INTERSECT       reduce using rule 3 (expr -> rename_expr .)
+    JOIN            reduce using rule 3 (expr -> rename_expr .)
+    TIMES           reduce using rule 3 (expr -> rename_expr .)
+    RPARENT         reduce using rule 3 (expr -> rename_expr .)
+
+
+state 5
+
+    (4) expr -> union_expr .
+
+    SEMI            reduce using rule 4 (expr -> union_expr .)
+    UNION           reduce using rule 4 (expr -> union_expr .)
+    MINUS           reduce using rule 4 (expr -> union_expr .)
+    INTERSECT       reduce using rule 4 (expr -> union_expr .)
+    JOIN            reduce using rule 4 (expr -> union_expr .)
+    TIMES           reduce using rule 4 (expr -> union_expr .)
+    RPARENT         reduce using rule 4 (expr -> union_expr .)
+
+
+state 6
+
+    (5) expr -> minus_expr .
+
+    SEMI            reduce using rule 5 (expr -> minus_expr .)
+    UNION           reduce using rule 5 (expr -> minus_expr .)
+    MINUS           reduce using rule 5 (expr -> minus_expr .)
+    INTERSECT       reduce using rule 5 (expr -> minus_expr .)
+    JOIN            reduce using rule 5 (expr -> minus_expr .)
+    TIMES           reduce using rule 5 (expr -> minus_expr .)
+    RPARENT         reduce using rule 5 (expr -> minus_expr .)
+
+
+state 7
+
+    (6) expr -> intersect_expr .
+
+    SEMI            reduce using rule 6 (expr -> intersect_expr .)
+    UNION           reduce using rule 6 (expr -> intersect_expr .)
+    MINUS           reduce using rule 6 (expr -> intersect_expr .)
+    INTERSECT       reduce using rule 6 (expr -> intersect_expr .)
+    JOIN            reduce using rule 6 (expr -> intersect_expr .)
+    TIMES           reduce using rule 6 (expr -> intersect_expr .)
+    RPARENT         reduce using rule 6 (expr -> intersect_expr .)
+
+
+state 8
+
+    (7) expr -> join_expr .
+
+    SEMI            reduce using rule 7 (expr -> join_expr .)
+    UNION           reduce using rule 7 (expr -> join_expr .)
+    MINUS           reduce using rule 7 (expr -> join_expr .)
+    INTERSECT       reduce using rule 7 (expr -> join_expr .)
+    JOIN            reduce using rule 7 (expr -> join_expr .)
+    TIMES           reduce using rule 7 (expr -> join_expr .)
+    RPARENT         reduce using rule 7 (expr -> join_expr .)
+
+
+state 9
+
+    (8) expr -> times_expr .
+
+    SEMI            reduce using rule 8 (expr -> times_expr .)
+    UNION           reduce using rule 8 (expr -> times_expr .)
+    MINUS           reduce using rule 8 (expr -> times_expr .)
+    INTERSECT       reduce using rule 8 (expr -> times_expr .)
+    JOIN            reduce using rule 8 (expr -> times_expr .)
+    TIMES           reduce using rule 8 (expr -> times_expr .)
+    RPARENT         reduce using rule 8 (expr -> times_expr .)
+
+
+state 10
+
+    (9) expr -> paren_expr .
+
+    SEMI            reduce using rule 9 (expr -> paren_expr .)
+    UNION           reduce using rule 9 (expr -> paren_expr .)
+    MINUS           reduce using rule 9 (expr -> paren_expr .)
+    INTERSECT       reduce using rule 9 (expr -> paren_expr .)
+    JOIN            reduce using rule 9 (expr -> paren_expr .)
+    TIMES           reduce using rule 9 (expr -> paren_expr .)
+    RPARENT         reduce using rule 9 (expr -> paren_expr .)
+
+
+state 11
+
+    (10) expr -> select_expr .
+
+    SEMI            reduce using rule 10 (expr -> select_expr .)
+    UNION           reduce using rule 10 (expr -> select_expr .)
+    MINUS           reduce using rule 10 (expr -> select_expr .)
+    INTERSECT       reduce using rule 10 (expr -> select_expr .)
+    JOIN            reduce using rule 10 (expr -> select_expr .)
+    TIMES           reduce using rule 10 (expr -> select_expr .)
+    RPARENT         reduce using rule 10 (expr -> select_expr .)
+
+
+state 12
+
+    (11) expr -> ID .
+
+    SEMI            reduce using rule 11 (expr -> ID .)
+    UNION           reduce using rule 11 (expr -> ID .)
+    MINUS           reduce using rule 11 (expr -> ID .)
+    INTERSECT       reduce using rule 11 (expr -> ID .)
+    JOIN            reduce using rule 11 (expr -> ID .)
+    TIMES           reduce using rule 11 (expr -> ID .)
+    RPARENT         reduce using rule 11 (expr -> ID .)
+
+
+state 13
+
+    (12) proj_expr -> PROJECT . LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+
+    LBRACKET        shift and go to state 23
+
+
+state 14
+
+    (25) paren_expr -> LPARENT . expr RPARENT
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 24
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 15
+
+    (13) rename_expr -> RENAME . LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+
+    LBRACKET        shift and go to state 25
+
+
+state 16
+
+    (26) select_expr -> SELECT . LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    LBRACKET        shift and go to state 26
+
+
+state 17
+
+    (1) query -> expr SEMI .
+
+    $end            reduce using rule 1 (query -> expr SEMI .)
+
+
+state 18
+
+    (20) union_expr -> expr UNION . expr
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 27
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 19
+
+    (21) minus_expr -> expr MINUS . expr
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 28
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 20
+
+    (22) intersect_expr -> expr INTERSECT . expr
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 29
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 21
+
+    (23) join_expr -> expr JOIN . expr
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 30
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 22
+
+    (24) times_expr -> expr TIMES . expr
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 31
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 23
+
+    (12) proj_expr -> PROJECT LBRACKET . attr_list RBRACKET LPARENT expr RPARENT
+    (14) attr_list -> . ID
+    (15) attr_list -> . COUNT LPARENT ID RPARENT
+    (16) attr_list -> . SUM LPARENT ID RPARENT
+    (17) attr_list -> . attr_list COMMA ID
+    (18) attr_list -> . attr_list COMMA COUNT LPARENT ID RPARENT
+    (19) attr_list -> . attr_list COMMA SUM LPARENT ID RPARENT
+
+    ID              shift and go to state 33
+    COUNT           shift and go to state 34
+    SUM             shift and go to state 35
+
+    attr_list                      shift and go to state 32
+
+state 24
+
+    (25) paren_expr -> LPARENT expr . RPARENT
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    RPARENT         shift and go to state 36
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+
+state 25
+
+    (13) rename_expr -> RENAME LBRACKET . attr_list RBRACKET LPARENT expr RPARENT
+    (14) attr_list -> . ID
+    (15) attr_list -> . COUNT LPARENT ID RPARENT
+    (16) attr_list -> . SUM LPARENT ID RPARENT
+    (17) attr_list -> . attr_list COMMA ID
+    (18) attr_list -> . attr_list COMMA COUNT LPARENT ID RPARENT
+    (19) attr_list -> . attr_list COMMA SUM LPARENT ID RPARENT
+
+    ID              shift and go to state 33
+    COUNT           shift and go to state 34
+    SUM             shift and go to state 35
+
+    attr_list                      shift and go to state 37
+
+state 26
+
+    (26) select_expr -> SELECT LBRACKET . condition RBRACKET LPARENT expr RPARENT
+    (27) condition -> . simple_condition
+    (28) condition -> . condition AND simple_condition
+    (29) simple_condition -> . operand COMPARISION operand
+    (30) simple_condition -> . operand LIKE operand
+    (31) operand -> . ID
+    (32) operand -> . STRING
+    (33) operand -> . NUMBER
+
+    ID              shift and go to state 41
+    STRING          shift and go to state 42
+    NUMBER          shift and go to state 43
+
+    condition                      shift and go to state 38
+    simple_condition               shift and go to state 39
+    operand                        shift and go to state 40
+
+state 27
+
+    (20) union_expr -> expr UNION expr .
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            reduce using rule 20 (union_expr -> expr UNION expr .)
+    RPARENT         reduce using rule 20 (union_expr -> expr UNION expr .)
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+  ! UNION           [ reduce using rule 20 (union_expr -> expr UNION expr .) ]
+  ! MINUS           [ reduce using rule 20 (union_expr -> expr UNION expr .) ]
+  ! INTERSECT       [ reduce using rule 20 (union_expr -> expr UNION expr .) ]
+  ! JOIN            [ reduce using rule 20 (union_expr -> expr UNION expr .) ]
+  ! TIMES           [ reduce using rule 20 (union_expr -> expr UNION expr .) ]
+
+
+state 28
+
+    (21) minus_expr -> expr MINUS expr .
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            reduce using rule 21 (minus_expr -> expr MINUS expr .)
+    RPARENT         reduce using rule 21 (minus_expr -> expr MINUS expr .)
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+  ! UNION           [ reduce using rule 21 (minus_expr -> expr MINUS expr .) ]
+  ! MINUS           [ reduce using rule 21 (minus_expr -> expr MINUS expr .) ]
+  ! INTERSECT       [ reduce using rule 21 (minus_expr -> expr MINUS expr .) ]
+  ! JOIN            [ reduce using rule 21 (minus_expr -> expr MINUS expr .) ]
+  ! TIMES           [ reduce using rule 21 (minus_expr -> expr MINUS expr .) ]
+
+
+state 29
+
+    (22) intersect_expr -> expr INTERSECT expr .
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            reduce using rule 22 (intersect_expr -> expr INTERSECT expr .)
+    RPARENT         reduce using rule 22 (intersect_expr -> expr INTERSECT expr .)
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+  ! UNION           [ reduce using rule 22 (intersect_expr -> expr INTERSECT expr .) ]
+  ! MINUS           [ reduce using rule 22 (intersect_expr -> expr INTERSECT expr .) ]
+  ! INTERSECT       [ reduce using rule 22 (intersect_expr -> expr INTERSECT expr .) ]
+  ! JOIN            [ reduce using rule 22 (intersect_expr -> expr INTERSECT expr .) ]
+  ! TIMES           [ reduce using rule 22 (intersect_expr -> expr INTERSECT expr .) ]
+
+
+state 30
+
+    (23) join_expr -> expr JOIN expr .
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            reduce using rule 23 (join_expr -> expr JOIN expr .)
+    UNION           reduce using rule 23 (join_expr -> expr JOIN expr .)
+    MINUS           reduce using rule 23 (join_expr -> expr JOIN expr .)
+    INTERSECT       reduce using rule 23 (join_expr -> expr JOIN expr .)
+    RPARENT         reduce using rule 23 (join_expr -> expr JOIN expr .)
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+  ! JOIN            [ reduce using rule 23 (join_expr -> expr JOIN expr .) ]
+  ! TIMES           [ reduce using rule 23 (join_expr -> expr JOIN expr .) ]
+  ! UNION           [ shift and go to state 18 ]
+  ! MINUS           [ shift and go to state 19 ]
+  ! INTERSECT       [ shift and go to state 20 ]
+
+
+state 31
+
+    (24) times_expr -> expr TIMES expr .
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    SEMI            reduce using rule 24 (times_expr -> expr TIMES expr .)
+    UNION           reduce using rule 24 (times_expr -> expr TIMES expr .)
+    MINUS           reduce using rule 24 (times_expr -> expr TIMES expr .)
+    INTERSECT       reduce using rule 24 (times_expr -> expr TIMES expr .)
+    RPARENT         reduce using rule 24 (times_expr -> expr TIMES expr .)
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+  ! JOIN            [ reduce using rule 24 (times_expr -> expr TIMES expr .) ]
+  ! TIMES           [ reduce using rule 24 (times_expr -> expr TIMES expr .) ]
+  ! UNION           [ shift and go to state 18 ]
+  ! MINUS           [ shift and go to state 19 ]
+  ! INTERSECT       [ shift and go to state 20 ]
+
+
+state 32
+
+    (12) proj_expr -> PROJECT LBRACKET attr_list . RBRACKET LPARENT expr RPARENT
+    (17) attr_list -> attr_list . COMMA ID
+    (18) attr_list -> attr_list . COMMA COUNT LPARENT ID RPARENT
+    (19) attr_list -> attr_list . COMMA SUM LPARENT ID RPARENT
+
+    RBRACKET        shift and go to state 44
+    COMMA           shift and go to state 45
+
+
+state 33
+
+    (14) attr_list -> ID .
+
+    RBRACKET        reduce using rule 14 (attr_list -> ID .)
+    COMMA           reduce using rule 14 (attr_list -> ID .)
+
+
+state 34
+
+    (15) attr_list -> COUNT . LPARENT ID RPARENT
+
+    LPARENT         shift and go to state 46
+
+
+state 35
+
+    (16) attr_list -> SUM . LPARENT ID RPARENT
+
+    LPARENT         shift and go to state 47
+
+
+state 36
+
+    (25) paren_expr -> LPARENT expr RPARENT .
+
+    SEMI            reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    UNION           reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    MINUS           reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    INTERSECT       reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    JOIN            reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    TIMES           reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+    RPARENT         reduce using rule 25 (paren_expr -> LPARENT expr RPARENT .)
+
+
+state 37
+
+    (13) rename_expr -> RENAME LBRACKET attr_list . RBRACKET LPARENT expr RPARENT
+    (17) attr_list -> attr_list . COMMA ID
+    (18) attr_list -> attr_list . COMMA COUNT LPARENT ID RPARENT
+    (19) attr_list -> attr_list . COMMA SUM LPARENT ID RPARENT
+
+    RBRACKET        shift and go to state 48
+    COMMA           shift and go to state 45
+
+
+state 38
+
+    (26) select_expr -> SELECT LBRACKET condition . RBRACKET LPARENT expr RPARENT
+    (28) condition -> condition . AND simple_condition
+
+    RBRACKET        shift and go to state 49
+    AND             shift and go to state 50
+
+
+state 39
+
+    (27) condition -> simple_condition .
+
+    RBRACKET        reduce using rule 27 (condition -> simple_condition .)
+    AND             reduce using rule 27 (condition -> simple_condition .)
+
+
+state 40
+
+    (29) simple_condition -> operand . COMPARISION operand
+    (30) simple_condition -> operand . LIKE operand
+
+    COMPARISION     shift and go to state 51
+    LIKE            shift and go to state 52
+
+
+state 41
+
+    (31) operand -> ID .
+
+    COMPARISION     reduce using rule 31 (operand -> ID .)
+    LIKE            reduce using rule 31 (operand -> ID .)
+    RBRACKET        reduce using rule 31 (operand -> ID .)
+    AND             reduce using rule 31 (operand -> ID .)
+
+
+state 42
+
+    (32) operand -> STRING .
+
+    COMPARISION     reduce using rule 32 (operand -> STRING .)
+    LIKE            reduce using rule 32 (operand -> STRING .)
+    RBRACKET        reduce using rule 32 (operand -> STRING .)
+    AND             reduce using rule 32 (operand -> STRING .)
+
+
+state 43
+
+    (33) operand -> NUMBER .
+
+    COMPARISION     reduce using rule 33 (operand -> NUMBER .)
+    LIKE            reduce using rule 33 (operand -> NUMBER .)
+    RBRACKET        reduce using rule 33 (operand -> NUMBER .)
+    AND             reduce using rule 33 (operand -> NUMBER .)
+
+
+state 44
+
+    (12) proj_expr -> PROJECT LBRACKET attr_list RBRACKET . LPARENT expr RPARENT
+
+    LPARENT         shift and go to state 53
+
+
+state 45
+
+    (17) attr_list -> attr_list COMMA . ID
+    (18) attr_list -> attr_list COMMA . COUNT LPARENT ID RPARENT
+    (19) attr_list -> attr_list COMMA . SUM LPARENT ID RPARENT
+
+    ID              shift and go to state 54
+    COUNT           shift and go to state 55
+    SUM             shift and go to state 56
+
+
+state 46
+
+    (15) attr_list -> COUNT LPARENT . ID RPARENT
+
+    ID              shift and go to state 57
+
+
+state 47
+
+    (16) attr_list -> SUM LPARENT . ID RPARENT
+
+    ID              shift and go to state 58
+
+
+state 48
+
+    (13) rename_expr -> RENAME LBRACKET attr_list RBRACKET . LPARENT expr RPARENT
+
+    LPARENT         shift and go to state 59
+
+
+state 49
+
+    (26) select_expr -> SELECT LBRACKET condition RBRACKET . LPARENT expr RPARENT
+
+    LPARENT         shift and go to state 60
+
+
+state 50
+
+    (28) condition -> condition AND . simple_condition
+    (29) simple_condition -> . operand COMPARISION operand
+    (30) simple_condition -> . operand LIKE operand
+    (31) operand -> . ID
+    (32) operand -> . STRING
+    (33) operand -> . NUMBER
+
+    ID              shift and go to state 41
+    STRING          shift and go to state 42
+    NUMBER          shift and go to state 43
+
+    simple_condition               shift and go to state 61
+    operand                        shift and go to state 40
+
+state 51
+
+    (29) simple_condition -> operand COMPARISION . operand
+    (31) operand -> . ID
+    (32) operand -> . STRING
+    (33) operand -> . NUMBER
+
+    ID              shift and go to state 41
+    STRING          shift and go to state 42
+    NUMBER          shift and go to state 43
+
+    operand                        shift and go to state 62
+
+state 52
+
+    (30) simple_condition -> operand LIKE . operand
+    (31) operand -> . ID
+    (32) operand -> . STRING
+    (33) operand -> . NUMBER
+
+    ID              shift and go to state 41
+    STRING          shift and go to state 42
+    NUMBER          shift and go to state 43
+
+    operand                        shift and go to state 63
+
+state 53
+
+    (12) proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT . expr RPARENT
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 64
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 54
+
+    (17) attr_list -> attr_list COMMA ID .
+
+    RBRACKET        reduce using rule 17 (attr_list -> attr_list COMMA ID .)
+    COMMA           reduce using rule 17 (attr_list -> attr_list COMMA ID .)
+
+
+state 55
+
+    (18) attr_list -> attr_list COMMA COUNT . LPARENT ID RPARENT
+
+    LPARENT         shift and go to state 65
+
+
+state 56
+
+    (19) attr_list -> attr_list COMMA SUM . LPARENT ID RPARENT
+
+    LPARENT         shift and go to state 66
+
+
+state 57
+
+    (15) attr_list -> COUNT LPARENT ID . RPARENT
+
+    RPARENT         shift and go to state 67
+
+
+state 58
+
+    (16) attr_list -> SUM LPARENT ID . RPARENT
+
+    RPARENT         shift and go to state 68
+
+
+state 59
+
+    (13) rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT . expr RPARENT
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 69
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 60
+
+    (26) select_expr -> SELECT LBRACKET condition RBRACKET LPARENT . expr RPARENT
+    (2) expr -> . proj_expr
+    (3) expr -> . rename_expr
+    (4) expr -> . union_expr
+    (5) expr -> . minus_expr
+    (6) expr -> . intersect_expr
+    (7) expr -> . join_expr
+    (8) expr -> . times_expr
+    (9) expr -> . paren_expr
+    (10) expr -> . select_expr
+    (11) expr -> . ID
+    (12) proj_expr -> . PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (13) rename_expr -> . RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT
+    (20) union_expr -> . expr UNION expr
+    (21) minus_expr -> . expr MINUS expr
+    (22) intersect_expr -> . expr INTERSECT expr
+    (23) join_expr -> . expr JOIN expr
+    (24) times_expr -> . expr TIMES expr
+    (25) paren_expr -> . LPARENT expr RPARENT
+    (26) select_expr -> . SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT
+
+    ID              shift and go to state 12
+    PROJECT         shift and go to state 13
+    RENAME          shift and go to state 15
+    LPARENT         shift and go to state 14
+    SELECT          shift and go to state 16
+
+    expr                           shift and go to state 70
+    proj_expr                      shift and go to state 3
+    rename_expr                    shift and go to state 4
+    union_expr                     shift and go to state 5
+    minus_expr                     shift and go to state 6
+    intersect_expr                 shift and go to state 7
+    join_expr                      shift and go to state 8
+    times_expr                     shift and go to state 9
+    paren_expr                     shift and go to state 10
+    select_expr                    shift and go to state 11
+
+state 61
+
+    (28) condition -> condition AND simple_condition .
+
+    RBRACKET        reduce using rule 28 (condition -> condition AND simple_condition .)
+    AND             reduce using rule 28 (condition -> condition AND simple_condition .)
+
+
+state 62
+
+    (29) simple_condition -> operand COMPARISION operand .
+
+    RBRACKET        reduce using rule 29 (simple_condition -> operand COMPARISION operand .)
+    AND             reduce using rule 29 (simple_condition -> operand COMPARISION operand .)
+
+
+state 63
+
+    (30) simple_condition -> operand LIKE operand .
+
+    RBRACKET        reduce using rule 30 (simple_condition -> operand LIKE operand .)
+    AND             reduce using rule 30 (simple_condition -> operand LIKE operand .)
+
+
+state 64
+
+    (12) proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr . RPARENT
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    RPARENT         shift and go to state 71
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+
+state 65
+
+    (18) attr_list -> attr_list COMMA COUNT LPARENT . ID RPARENT
+
+    ID              shift and go to state 72
+
+
+state 66
+
+    (19) attr_list -> attr_list COMMA SUM LPARENT . ID RPARENT
+
+    ID              shift and go to state 73
+
+
+state 67
+
+    (15) attr_list -> COUNT LPARENT ID RPARENT .
+
+    RBRACKET        reduce using rule 15 (attr_list -> COUNT LPARENT ID RPARENT .)
+    COMMA           reduce using rule 15 (attr_list -> COUNT LPARENT ID RPARENT .)
+
+
+state 68
+
+    (16) attr_list -> SUM LPARENT ID RPARENT .
+
+    RBRACKET        reduce using rule 16 (attr_list -> SUM LPARENT ID RPARENT .)
+    COMMA           reduce using rule 16 (attr_list -> SUM LPARENT ID RPARENT .)
+
+
+state 69
+
+    (13) rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr . RPARENT
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    RPARENT         shift and go to state 74
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+
+state 70
+
+    (26) select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr . RPARENT
+    (20) union_expr -> expr . UNION expr
+    (21) minus_expr -> expr . MINUS expr
+    (22) intersect_expr -> expr . INTERSECT expr
+    (23) join_expr -> expr . JOIN expr
+    (24) times_expr -> expr . TIMES expr
+
+    RPARENT         shift and go to state 75
+    UNION           shift and go to state 18
+    MINUS           shift and go to state 19
+    INTERSECT       shift and go to state 20
+    JOIN            shift and go to state 21
+    TIMES           shift and go to state 22
+
+
+state 71
+
+    (12) proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .
+
+    SEMI            reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    UNION           reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    MINUS           reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    INTERSECT       reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    JOIN            reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    TIMES           reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    RPARENT         reduce using rule 12 (proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+
+
+state 72
+
+    (18) attr_list -> attr_list COMMA COUNT LPARENT ID . RPARENT
+
+    RPARENT         shift and go to state 76
+
+
+state 73
+
+    (19) attr_list -> attr_list COMMA SUM LPARENT ID . RPARENT
+
+    RPARENT         shift and go to state 77
+
+
+state 74
+
+    (13) rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .
+
+    SEMI            reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    UNION           reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    MINUS           reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    INTERSECT       reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    JOIN            reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    TIMES           reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+    RPARENT         reduce using rule 13 (rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT .)
+
+
+state 75
+
+    (26) select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .
+
+    SEMI            reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    UNION           reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    MINUS           reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    INTERSECT       reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    JOIN            reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    TIMES           reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+    RPARENT         reduce using rule 26 (select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT .)
+
+
+state 76
+
+    (18) attr_list -> attr_list COMMA COUNT LPARENT ID RPARENT .
+
+    RBRACKET        reduce using rule 18 (attr_list -> attr_list COMMA COUNT LPARENT ID RPARENT .)
+    COMMA           reduce using rule 18 (attr_list -> attr_list COMMA COUNT LPARENT ID RPARENT .)
+
+
+state 77
+
+    (19) attr_list -> attr_list COMMA SUM LPARENT ID RPARENT .
+
+    RBRACKET        reduce using rule 19 (attr_list -> attr_list COMMA SUM LPARENT ID RPARENT .)
+    COMMA           reduce using rule 19 (attr_list -> attr_list COMMA SUM LPARENT ID RPARENT .)
+
