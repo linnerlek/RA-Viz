@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'rightUNIONMINUSINTERSECTrightTIMESJOINAND COMMA COMPARISION COUNT ID INTERSECT JOIN LBRACKET LIKE LPARENT MINUS NUMBER PROJECT RBRACKET RENAME RPARENT SELECT SEMI STRING SUM TIMES UNIONquery : expr SEMIexpr : proj_expr\n            | rename_expr\n            | union_expr\n            | minus_expr\n            | intersect_expr\n            | join_expr\n            | times_expr\n            | paren_expr\n            | select_expr expr : IDproj_expr : PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENTrename_expr : RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENTattr_list : ID\n                 | COUNT LPARENT ID RPARENT\n                 | SUM LPARENT ID RPARENTattr_list : attr_list COMMA ID\n                 | attr_list COMMA COUNT LPARENT ID RPARENT\n                 | attr_list COMMA SUM LPARENT ID RPARENTunion_expr : expr UNION exprminus_expr : expr MINUS expr intersect_expr : expr INTERSECT exprjoin_expr : expr JOIN exprtimes_expr : expr TIMES exprparen_expr : LPARENT expr RPARENTselect_expr : SELECT LBRACKET condition RBRACKET LPARENT expr RPARENTcondition : simple_conditioncondition : condition AND simple_conditionsimple_condition : operand COMPARISION operand\n                        | operand LIKE operandoperand : IDoperand : STRINGoperand : NUMBER'
+_lr_signature = 'rightUNIONMINUSINTERSECTrightTIMESJOINAGGREGATE AGG_OP AND COMMA COMPARISON ID INTERSECT JOIN LBRACKET LPARENT MINUS NUMBER PROJECT RBRACKET RENAME RPARENT SELECT SEMI STRING TIMES UNIONquery : expr SEMIexpr : proj_expr \n| rename_expr \n| union_expr     \n| minus_expr \n| intersect_expr \n| join_expr \n| times_expr \n| paren_expr \n| select_expr \n| aggregate_expr_1\n| aggregate_expr_2\n| aggregate_expr_3 expr : IDproj_expr : PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENTrename_expr : RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENTattr_list : IDattr_list : attr_list COMMA IDunion_expr : expr UNION exprminus_expr : expr MINUS expr intersect_expr : expr INTERSECT exprjoin_expr : expr JOIN exprtimes_expr : expr TIMES exprparen_expr : LPARENT expr RPARENTselect_expr : SELECT LBRACKET condition RBRACKET LPARENT expr RPARENTcondition : simple_conditioncondition : condition AND simple_conditionsimple_condition : operand COMPARISON operandoperand : IDoperand : STRINGoperand : NUMBERaggregate_expr_1 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT RBRACKET LPARENT expr RPARENTaggregate_expr_2 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT RBRACKET LPARENT expr RPARENTaggregate_expr_3 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT COMMA LPARENT gen_condition RPARENT RBRACKET LPARENT expr RPARENTgen_attr_list : gen_attrgen_attr_list : gen_attr_list COMMA gen_attrgen_attr : IDgen_attr : AGG_OP LPARENT ID RPARENTgen_condition : simple_gen_conditiongen_condition : gen_condition AND simple_gen_conditionsimple_gen_condition : gen_operand COMPARISON gen_operandsimple_gen_condition : gen_operand COMPARISON operandsimple_gen_condition : operand COMPARISON gen_operandsimple_gen_condition : operand COMPARISON operandgen_operand : AGG_OP LPARENT ID RPARENT'
     
-_lr_action_items = {'ID':([0,14,18,19,20,21,22,23,25,26,45,46,47,50,51,52,53,59,60,65,66,],[12,12,12,12,12,12,12,33,33,41,54,57,58,41,41,41,12,12,12,72,73,]),'PROJECT':([0,14,18,19,20,21,22,53,59,60,],[13,13,13,13,13,13,13,13,13,13,]),'RENAME':([0,14,18,19,20,21,22,53,59,60,],[15,15,15,15,15,15,15,15,15,15,]),'LPARENT':([0,14,18,19,20,21,22,34,35,44,48,49,53,55,56,59,60,],[14,14,14,14,14,14,14,46,47,53,59,60,14,65,66,14,14,]),'SELECT':([0,14,18,19,20,21,22,53,59,60,],[16,16,16,16,16,16,16,16,16,16,]),'$end':([1,17,],[0,-1,]),'SEMI':([2,3,4,5,6,7,8,9,10,11,12,27,28,29,30,31,36,71,74,75,],[17,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-20,-21,-22,-23,-24,-25,-12,-13,-26,]),'UNION':([2,3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,64,69,70,71,74,75,],[18,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,18,18,18,18,-23,-24,-25,18,18,18,-12,-13,-26,]),'MINUS':([2,3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,64,69,70,71,74,75,],[19,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,19,19,19,19,-23,-24,-25,19,19,19,-12,-13,-26,]),'INTERSECT':([2,3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,64,69,70,71,74,75,],[20,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,20,20,20,20,-23,-24,-25,20,20,20,-12,-13,-26,]),'JOIN':([2,3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,64,69,70,71,74,75,],[21,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,21,21,21,21,21,21,-25,21,21,21,-12,-13,-26,]),'TIMES':([2,3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,64,69,70,71,74,75,],[22,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,22,22,22,22,22,22,-25,22,22,22,-12,-13,-26,]),'RPARENT':([3,4,5,6,7,8,9,10,11,12,24,27,28,29,30,31,36,57,58,64,69,70,71,72,73,74,75,],[-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,36,-20,-21,-22,-23,-24,-25,67,68,71,74,75,-12,76,77,-13,-26,]),'LBRACKET':([13,15,16,],[23,25,26,]),'COUNT':([23,25,45,],[34,34,55,]),'SUM':([23,25,45,],[35,35,56,]),'STRING':([26,50,51,52,],[42,42,42,42,]),'NUMBER':([26,50,51,52,],[43,43,43,43,]),'RBRACKET':([32,33,37,38,39,41,42,43,54,61,62,63,67,68,76,77,],[44,-14,48,49,-27,-31,-32,-33,-17,-28,-29,-30,-15,-16,-18,-19,]),'COMMA':([32,33,37,54,67,68,76,77,],[45,-14,45,-17,-15,-16,-18,-19,]),'AND':([38,39,41,42,43,61,62,63,],[50,-27,-31,-32,-33,-28,-29,-30,]),'COMPARISION':([40,41,42,43,],[51,-31,-32,-33,]),'LIKE':([40,41,42,43,],[52,-31,-32,-33,]),}
+_lr_action_items = {'ID':([0,17,22,23,24,25,26,27,29,30,47,49,52,53,55,57,58,69,75,76,81,82,90,91,99,100,101,102,111,],[15,15,15,15,15,15,15,38,38,44,38,56,44,44,15,15,15,72,72,80,38,15,44,15,44,44,44,110,15,]),'PROJECT':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[16,16,16,16,16,16,16,16,16,16,16,16,16,]),'RENAME':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[18,18,18,18,18,18,18,18,18,18,18,18,18,]),'LPARENT':([0,17,22,23,24,25,26,31,48,50,51,55,57,58,65,73,77,78,82,88,89,91,96,104,111,],[17,17,17,17,17,17,17,47,55,57,58,17,17,17,69,76,81,82,17,90,91,17,102,111,17,]),'SELECT':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[19,19,19,19,19,19,19,19,19,19,19,19,19,]),'AGGREGATE':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[20,20,20,20,20,20,20,20,20,20,20,20,20,]),'$end':([1,21,],[0,-1,]),'SEMI':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,32,33,34,35,36,39,66,67,68,87,103,114,],[21,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-19,-20,-21,-22,-23,-24,-15,-16,-25,-32,-33,-34,]),'UNION':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,39,62,63,64,66,67,68,85,87,97,103,113,114,],[22,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,22,22,22,22,-22,-23,-24,22,22,22,-15,-16,-25,22,-32,22,-33,22,-34,]),'MINUS':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,39,62,63,64,66,67,68,85,87,97,103,113,114,],[23,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,23,23,23,23,-22,-23,-24,23,23,23,-15,-16,-25,23,-32,23,-33,23,-34,]),'INTERSECT':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,39,62,63,64,66,67,68,85,87,97,103,113,114,],[24,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,24,24,24,24,-22,-23,-24,24,24,24,-15,-16,-25,24,-32,24,-33,24,-34,]),'JOIN':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,39,62,63,64,66,67,68,85,87,97,103,113,114,],[25,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,25,25,25,25,25,25,-24,25,25,25,-15,-16,-25,25,-32,25,-33,25,-34,]),'TIMES':([2,3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,39,62,63,64,66,67,68,85,87,97,103,113,114,],[26,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,26,26,26,26,26,26,-24,26,26,26,-15,-16,-25,26,-32,26,-33,26,-34,]),'RPARENT':([3,4,5,6,7,8,9,10,11,12,13,14,15,28,32,33,34,35,36,38,39,44,45,46,54,56,62,63,64,66,67,68,70,71,72,79,80,83,84,85,87,92,93,97,103,105,106,107,108,109,110,112,113,114,],[-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,39,-19,-20,-21,-22,-23,-17,-24,-29,-30,-31,61,-18,66,67,68,-15,-16,-25,74,-35,-37,-36,83,-38,86,87,-32,98,-39,103,-33,-40,-41,-42,-44,-43,112,-45,114,-34,]),'LBRACKET':([16,18,19,20,],[27,29,30,31,]),'STRING':([30,52,53,90,99,100,101,],[45,45,45,45,45,45,45,]),'NUMBER':([30,52,53,90,99,100,101,],[46,46,46,46,46,46,46,]),'RBRACKET':([37,38,40,41,42,44,45,46,56,59,60,74,86,98,],[48,-17,50,51,-26,-29,-30,-31,-18,-27,-28,78,89,104,]),'COMMA':([37,38,40,54,56,61,70,71,72,74,79,83,84,86,],[49,-17,49,49,-18,65,75,-35,-37,77,-36,-38,49,88,]),'AND':([41,42,44,45,46,59,60,92,93,105,106,107,108,109,112,],[52,-26,-29,-30,-31,-27,-28,99,-39,-40,-41,-42,-44,-43,-45,]),'COMPARISON':([43,44,45,46,94,95,112,],[53,-29,-30,-31,100,101,-45,]),'AGG_OP':([69,75,90,99,100,101,],[73,73,96,96,96,96,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'query':([0,],[1,]),'expr':([0,14,18,19,20,21,22,53,59,60,],[2,24,27,28,29,30,31,64,69,70,]),'proj_expr':([0,14,18,19,20,21,22,53,59,60,],[3,3,3,3,3,3,3,3,3,3,]),'rename_expr':([0,14,18,19,20,21,22,53,59,60,],[4,4,4,4,4,4,4,4,4,4,]),'union_expr':([0,14,18,19,20,21,22,53,59,60,],[5,5,5,5,5,5,5,5,5,5,]),'minus_expr':([0,14,18,19,20,21,22,53,59,60,],[6,6,6,6,6,6,6,6,6,6,]),'intersect_expr':([0,14,18,19,20,21,22,53,59,60,],[7,7,7,7,7,7,7,7,7,7,]),'join_expr':([0,14,18,19,20,21,22,53,59,60,],[8,8,8,8,8,8,8,8,8,8,]),'times_expr':([0,14,18,19,20,21,22,53,59,60,],[9,9,9,9,9,9,9,9,9,9,]),'paren_expr':([0,14,18,19,20,21,22,53,59,60,],[10,10,10,10,10,10,10,10,10,10,]),'select_expr':([0,14,18,19,20,21,22,53,59,60,],[11,11,11,11,11,11,11,11,11,11,]),'attr_list':([23,25,],[32,37,]),'condition':([26,],[38,]),'simple_condition':([26,50,],[39,61,]),'operand':([26,50,51,52,],[40,40,62,63,]),}
+_lr_goto_items = {'query':([0,],[1,]),'expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[2,28,32,33,34,35,36,62,63,64,85,97,113,]),'proj_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[3,3,3,3,3,3,3,3,3,3,3,3,3,]),'rename_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[4,4,4,4,4,4,4,4,4,4,4,4,4,]),'union_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[5,5,5,5,5,5,5,5,5,5,5,5,5,]),'minus_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[6,6,6,6,6,6,6,6,6,6,6,6,6,]),'intersect_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[7,7,7,7,7,7,7,7,7,7,7,7,7,]),'join_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[8,8,8,8,8,8,8,8,8,8,8,8,8,]),'times_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[9,9,9,9,9,9,9,9,9,9,9,9,9,]),'paren_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[10,10,10,10,10,10,10,10,10,10,10,10,10,]),'select_expr':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[11,11,11,11,11,11,11,11,11,11,11,11,11,]),'aggregate_expr_1':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[12,12,12,12,12,12,12,12,12,12,12,12,12,]),'aggregate_expr_2':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[13,13,13,13,13,13,13,13,13,13,13,13,13,]),'aggregate_expr_3':([0,17,22,23,24,25,26,55,57,58,82,91,111,],[14,14,14,14,14,14,14,14,14,14,14,14,14,]),'attr_list':([27,29,47,81,],[37,40,54,84,]),'condition':([30,],[41,]),'simple_condition':([30,52,],[42,59,]),'operand':([30,52,53,90,99,100,101,],[43,43,60,95,95,107,108,]),'gen_attr_list':([69,],[70,]),'gen_attr':([69,75,],[71,79,]),'gen_condition':([90,],[92,]),'simple_gen_condition':([90,99,],[93,105,]),'gen_operand':([90,99,100,101,],[94,94,106,109,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,37 +27,49 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> query","S'",1,None,None,None),
-  ('query -> expr SEMI','query',2,'p_query','RAP.py',95),
-  ('expr -> proj_expr','expr',1,'p_expr','RAP.py',100),
-  ('expr -> rename_expr','expr',1,'p_expr','RAP.py',101),
-  ('expr -> union_expr','expr',1,'p_expr','RAP.py',102),
-  ('expr -> minus_expr','expr',1,'p_expr','RAP.py',103),
-  ('expr -> intersect_expr','expr',1,'p_expr','RAP.py',104),
-  ('expr -> join_expr','expr',1,'p_expr','RAP.py',105),
-  ('expr -> times_expr','expr',1,'p_expr','RAP.py',106),
-  ('expr -> paren_expr','expr',1,'p_expr','RAP.py',107),
-  ('expr -> select_expr','expr',1,'p_expr','RAP.py',108),
-  ('expr -> ID','expr',1,'p_ID','RAP.py',113),
-  ('proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT','proj_expr',7,'p_proj_expr','RAP.py',120),
-  ('rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT','rename_expr',7,'p_rename_expr','RAP.py',128),
-  ('attr_list -> ID','attr_list',1,'p_attr_list','RAP.py',135),
-  ('attr_list -> COUNT LPARENT ID RPARENT','attr_list',4,'p_attr_list','RAP.py',136),
-  ('attr_list -> SUM LPARENT ID RPARENT','attr_list',4,'p_attr_list','RAP.py',137),
-  ('attr_list -> attr_list COMMA ID','attr_list',3,'p_attr_list_2','RAP.py',145),
-  ('attr_list -> attr_list COMMA COUNT LPARENT ID RPARENT','attr_list',6,'p_attr_list_2','RAP.py',146),
-  ('attr_list -> attr_list COMMA SUM LPARENT ID RPARENT','attr_list',6,'p_attr_list_2','RAP.py',147),
-  ('union_expr -> expr UNION expr','union_expr',3,'p_union_expr','RAP.py',155),
-  ('minus_expr -> expr MINUS expr','minus_expr',3,'p_minus_expr','RAP.py',161),
-  ('intersect_expr -> expr INTERSECT expr','intersect_expr',3,'p_intersect_expr','RAP.py',167),
-  ('join_expr -> expr JOIN expr','join_expr',3,'p_join_expr','RAP.py',173),
-  ('times_expr -> expr TIMES expr','times_expr',3,'p_times_expr','RAP.py',179),
-  ('paren_expr -> LPARENT expr RPARENT','paren_expr',3,'p_paren_expr','RAP.py',185),
-  ('select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT','select_expr',7,'p_select_expr','RAP.py',190),
-  ('condition -> simple_condition','condition',1,'p_condition','RAP.py',197),
-  ('condition -> condition AND simple_condition','condition',3,'p_condition_2','RAP.py',202),
-  ('simple_condition -> operand COMPARISION operand','simple_condition',3,'p_simple_condition','RAP.py',207),
-  ('simple_condition -> operand LIKE operand','simple_condition',3,'p_simple_condition','RAP.py',208),
-  ('operand -> ID','operand',1,'p_operand_1','RAP.py',213),
-  ('operand -> STRING','operand',1,'p_operand_2','RAP.py',218),
-  ('operand -> NUMBER','operand',1,'p_operand_3','RAP.py',223),
+  ('query -> expr SEMI','query',2,'p_query','RAP.py',97),
+  ('expr -> proj_expr','expr',1,'p_expr','RAP.py',102),
+  ('expr -> rename_expr','expr',1,'p_expr','RAP.py',103),
+  ('expr -> union_expr','expr',1,'p_expr','RAP.py',104),
+  ('expr -> minus_expr','expr',1,'p_expr','RAP.py',105),
+  ('expr -> intersect_expr','expr',1,'p_expr','RAP.py',106),
+  ('expr -> join_expr','expr',1,'p_expr','RAP.py',107),
+  ('expr -> times_expr','expr',1,'p_expr','RAP.py',108),
+  ('expr -> paren_expr','expr',1,'p_expr','RAP.py',109),
+  ('expr -> select_expr','expr',1,'p_expr','RAP.py',110),
+  ('expr -> aggregate_expr_1','expr',1,'p_expr','RAP.py',111),
+  ('expr -> aggregate_expr_2','expr',1,'p_expr','RAP.py',112),
+  ('expr -> aggregate_expr_3','expr',1,'p_expr','RAP.py',113),
+  ('expr -> ID','expr',1,'p_ID','RAP.py',118),
+  ('proj_expr -> PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT','proj_expr',7,'p_proj_expr','RAP.py',125),
+  ('rename_expr -> RENAME LBRACKET attr_list RBRACKET LPARENT expr RPARENT','rename_expr',7,'p_rename_expr','RAP.py',133),
+  ('attr_list -> ID','attr_list',1,'p_attr_list','RAP.py',140),
+  ('attr_list -> attr_list COMMA ID','attr_list',3,'p_attr_list_2','RAP.py',144),
+  ('union_expr -> expr UNION expr','union_expr',3,'p_union_expr','RAP.py',149),
+  ('minus_expr -> expr MINUS expr','minus_expr',3,'p_minus_expr','RAP.py',155),
+  ('intersect_expr -> expr INTERSECT expr','intersect_expr',3,'p_intersect_expr','RAP.py',161),
+  ('join_expr -> expr JOIN expr','join_expr',3,'p_join_expr','RAP.py',167),
+  ('times_expr -> expr TIMES expr','times_expr',3,'p_times_expr','RAP.py',173),
+  ('paren_expr -> LPARENT expr RPARENT','paren_expr',3,'p_paren_expr','RAP.py',179),
+  ('select_expr -> SELECT LBRACKET condition RBRACKET LPARENT expr RPARENT','select_expr',7,'p_select_expr','RAP.py',184),
+  ('condition -> simple_condition','condition',1,'p_condition','RAP.py',191),
+  ('condition -> condition AND simple_condition','condition',3,'p_condition_2','RAP.py',196),
+  ('simple_condition -> operand COMPARISON operand','simple_condition',3,'p_simple_condition','RAP.py',201),
+  ('operand -> ID','operand',1,'p_operand_1','RAP.py',206),
+  ('operand -> STRING','operand',1,'p_operand_2','RAP.py',211),
+  ('operand -> NUMBER','operand',1,'p_operand_3','RAP.py',216),
+  ('aggregate_expr_1 -> AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT RBRACKET LPARENT expr RPARENT','aggregate_expr_1',13,'p_aggregate_expr_1','RAP.py',223),
+  ('aggregate_expr_2 -> AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT RBRACKET LPARENT expr RPARENT','aggregate_expr_2',17,'p_aggregate_expr_2','RAP.py',231),
+  ('aggregate_expr_3 -> AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT COMMA LPARENT gen_condition RPARENT RBRACKET LPARENT expr RPARENT','aggregate_expr_3',21,'p_aggregate_expr_3','RAP.py',240),
+  ('gen_attr_list -> gen_attr','gen_attr_list',1,'p_gen_attr_list_1','RAP.py',249),
+  ('gen_attr_list -> gen_attr_list COMMA gen_attr','gen_attr_list',3,'p_gen_attr_list_2','RAP.py',253),
+  ('gen_attr -> ID','gen_attr',1,'p_gen_attr_1','RAP.py',257),
+  ('gen_attr -> AGG_OP LPARENT ID RPARENT','gen_attr',4,'p_gen_attr_2','RAP.py',261),
+  ('gen_condition -> simple_gen_condition','gen_condition',1,'p_gen_condition_1','RAP.py',265),
+  ('gen_condition -> gen_condition AND simple_gen_condition','gen_condition',3,'p_gen_condition_2','RAP.py',269),
+  ('simple_gen_condition -> gen_operand COMPARISON gen_operand','simple_gen_condition',3,'p_simple_gen_condition_1','RAP.py',273),
+  ('simple_gen_condition -> gen_operand COMPARISON operand','simple_gen_condition',3,'p_simple_gen_condition_2','RAP.py',277),
+  ('simple_gen_condition -> operand COMPARISON gen_operand','simple_gen_condition',3,'p_simple_gen_condition_3','RAP.py',281),
+  ('simple_gen_condition -> operand COMPARISON operand','simple_gen_condition',3,'p_simple_gen_condition_4','RAP.py',285),
+  ('gen_operand -> AGG_OP LPARENT ID RPARENT','gen_operand',4,'p_gen_operand','RAP.py',289),
 ]

@@ -5,13 +5,13 @@ import ply.lex as lex
 
 reserved = {
     'project': 'PROJECT', 'rename': 'RENAME', 'union': 'UNION', 'intersect': 'INTERSECT',
-    'minus': 'MINUS', 'join': 'JOIN', 'times': 'TIMES', 'select': 'SELECT', 'and': 'AND', 'like': 'LIKE',
-    'sum': 'SUM', 'count': 'COUNT'
+    'minus': 'MINUS', 'join': 'JOIN', 'times': 'TIMES', 'select': 'SELECT', 'and': 'AND',
+    'aggregate': 'AGGREGATE'
 }
 
 tokens = [
-    'SEMI', 'COMPARISION', 'LPARENT', 'RPARENT', 'COMMA', 'NUMBER', 'ID', 'STRING',
-    'LBRACKET', 'RBRACKET'
+    'SEMI', 'COMPARISON', 'LPARENT', 'RPARENT', 'COMMA', 'NUMBER', 'ID', 'STRING',
+    'LBRACKET', 'RBRACKET', 'AGG_OP'
 ] + list(reserved.values())
 
 t_SEMI = r';'
@@ -27,9 +27,11 @@ t_JOIN = r'[Jj][Oo][Ii][Nn]'
 t_TIMES = r'[Tt][Ii][Mm][Ee][Ss]'
 t_SELECT = r'[Ss][Ee][Ll][Ee][Cc][Tt]'
 t_COMMA = r','
-t_COMPARISION = r'<>|<=|>=|<|>|='
+t_COMPARISON = r'<>|<=|>=|<|>|='
 t_RBRACKET = r'\]'
 t_LBRACKET = r'\['
+
+t_AGGREGATE = r'[Aa][Gg][Gg][Rr][Ee][Gg][Aa][Tt][Ee]'
 
 t_ignore = ' \t'
 
@@ -50,9 +52,12 @@ def t_NUMBER(t):
 
 def t_ID(t):
     r'[a-zA-Z][_a-zA-Z0-9]*'
-    t.type = reserved.get(t.value.lower(), 'ID')
+    if t.value.lower() in ['sum','avg','count','min','max']:
+        t.type = 'AGG_OP'
+    else:
+        t.type = reserved.get(t.value.lower(), 'ID')
     t.value = t.value.upper()
-    return t
+    return t   
 
 
 t_ignore_COMMENT = r'\#.*'
@@ -97,15 +102,18 @@ def p_query(p):
 
 
 def p_expr(p):
-    '''expr : proj_expr
-            | rename_expr
-            | union_expr
-            | minus_expr
-            | intersect_expr
-            | join_expr
-            | times_expr
-            | paren_expr
-            | select_expr '''
+    '''expr : proj_expr 
+            | rename_expr 
+            | union_expr     
+            | minus_expr 
+            | intersect_expr 
+            | join_expr 
+            | times_expr 
+            | paren_expr 
+            | select_expr 
+            | aggregate_expr_1
+            | aggregate_expr_2
+            | aggregate_expr_3 '''
     p[0] = p[1]
 
 
@@ -119,7 +127,7 @@ def p_ID(p):
 def p_proj_expr(p):
     'proj_expr : PROJECT LBRACKET attr_list RBRACKET LPARENT expr RPARENT'
     n = Node("project", p[6], None)
-    n.set_columns(p[3])  # attr_list may contain aggregates like SUM or COUNT
+    n.set_columns(p[3])
     p[0] = n
 
 
@@ -132,23 +140,12 @@ def p_rename_expr(p):
 
 
 def p_attr_list(p):
-    '''attr_list : ID
-                 | COUNT LPARENT ID RPARENT
-                 | SUM LPARENT ID RPARENT'''
-    if len(p) == 2:
-        p[0] = [p[1].upper()]
-    else:
-        p[0] = [f"{p[1].upper()}({p[3].upper()})"]
-
+    'attr_list : ID'
+    p[0] = [p[1].upper()]
 
 def p_attr_list_2(p):
-    '''attr_list : attr_list COMMA ID
-                 | attr_list COMMA COUNT LPARENT ID RPARENT
-                 | attr_list COMMA SUM LPARENT ID RPARENT'''
-    if len(p) == 4:
-        p[0] = p[1] + [p[3].upper()]
-    else:
-        p[0] = p[1] + [f"{p[3].upper()}({p[5].upper()})"]
+    'attr_list : attr_list COMMA ID'
+    p[0] = p[1] + [p[3].upper()]
 
 
 def p_union_expr(p):
@@ -204,9 +201,8 @@ def p_condition_2(p):
 
 
 def p_simple_condition(p):
-    '''simple_condition : operand COMPARISION operand
-                        | operand LIKE operand'''
-    p[0] = [p[1][0], p[1][1], p[2].upper(), p[3][0], p[3][1]]
+    'simple_condition : operand COMPARISON operand'
+    p[0] = [p[1][0], p[1][1], p[2], p[3][0], p[3][1]]
 
 
 def p_operand_1(p):
@@ -223,6 +219,79 @@ def p_operand_3(p):
     'operand : NUMBER'
     p[0] = ['num', float(p[1])]
 
+# AGGREGATE Rules
+
+# NO group-by, NO having
+def p_aggregate_expr_1(p):
+    'aggregate_expr_1 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT RBRACKET LPARENT expr RPARENT'
+    n = Node("aggregate1",p[12],None)
+    n.set_columns(p[4])
+    n.set_aggregate_project_list(p[8])
+    p[0] = n
+
+# group-by, NO having
+def p_aggregate_expr_2(p):
+    'aggregate_expr_2 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT RBRACKET LPARENT expr RPARENT'
+    n = Node("aggregate2",p[16],None)
+    n.set_columns(p[4])
+    n.set_aggregate_project_list(p[8])
+    n.set_aggregate_groupby_list(p[12])
+    p[0] = n
+
+# group-by, having
+def p_aggregate_expr_3(p):
+    'aggregate_expr_3 : AGGREGATE LBRACKET LPARENT attr_list RPARENT COMMA LPARENT gen_attr_list RPARENT COMMA LPARENT attr_list RPARENT COMMA LPARENT gen_condition RPARENT RBRACKET LPARENT expr RPARENT'
+    n = Node("aggregate3",p[20],None)
+    n.set_columns(p[4])
+    n.set_aggregate_project_list(p[8])
+    n.set_aggregate_groupby_list(p[12])
+    n.set_aggregate_having_condition(p[16])
+    p[0] = n
+
+def p_gen_attr_list_1(p):
+    'gen_attr_list : gen_attr'
+    p[0] = [p[1]]
+
+def p_gen_attr_list_2(p):
+    'gen_attr_list : gen_attr_list COMMA gen_attr'
+    p[0] = p[1] + [p[3]]
+
+def p_gen_attr_1(p):
+    'gen_attr : ID'
+    p[0] = ('id',p[1].upper())
+
+def p_gen_attr_2(p):
+    'gen_attr : AGG_OP LPARENT ID RPARENT'
+    p[0] = ('agg',(p[1].upper(),p[3].upper()))
+
+def p_gen_condition_1(p):
+    'gen_condition : simple_gen_condition' 
+    p[0] = [p[1]]
+
+def p_gen_condition_2(p):
+    'gen_condition : gen_condition AND simple_gen_condition'
+    p[0] = p[1] + [p[3]]
+
+def p_simple_gen_condition_1(p):
+    'simple_gen_condition : gen_operand COMPARISON gen_operand'
+    p[0] = [p[1][0], p[1][1], p[2], p[3][0], p[3][1]]
+
+def p_simple_gen_condition_2(p):
+    'simple_gen_condition : gen_operand COMPARISON operand'
+    p[0] = [p[1][0], p[1][1], p[2], p[3][0], p[3][1]]
+
+def p_simple_gen_condition_3(p):
+    'simple_gen_condition : operand COMPARISON gen_operand'
+    p[0] = [p[1][0], p[1][1], p[2], p[3][0], p[3][1]]
+
+def p_simple_gen_condition_4(p):
+    'simple_gen_condition : operand COMPARISON operand'
+    p[0] = [p[1][0], p[1][1], p[2], p[3][0], p[3][1]]
+
+def p_gen_operand(p):
+    'gen_operand : AGG_OP LPARENT ID RPARENT'
+    p[0] = ('agg',(p[1].upper(),p[3].upper()))
+
 
 def p_error(p):
     raise TypeError("Syntax error: '%s'" % p.value)
@@ -230,6 +299,7 @@ def p_error(p):
 
 
 parser = yacc.yacc()
+
 
 
 class SQLite3():
@@ -319,142 +389,189 @@ class SQLite3():
         return len(records) == 0
 
 
+
+
 class Node:
 
     def __init__(self, ntype, lc, rc):
         self.node_type = ntype		# "relation", "select", "project", "times",...
         self.left_child = lc		# left child
         self.right_child = rc		# right child
-        self.columns = None			# list of column names for RENAME and PROJECT
-        # list of conditions for SELECT [(lop,lot,c,rop,rot)..]
-        self.conditions = None
+        self.columns = None		# list of column names for RENAME and PROJECT and AGGREGATE
+        self.conditions = None		# list of conditions for SELECT [(lop,lot,c,rop,rot)..]
 
-        # the following variables are populated in RA.py
-        # relation name at node (tempN interior, regular leaf)
-        self.relation_name = None
+		## the following variables are populated in RA.py
+        self.relation_name = None	# relation name at node (tempN interior, regular leaf)
         self.attributes = None		# holds schema attributes at node
-        self.domains = None			# holds schema domains of attributes at node
+        self.domains = None		# holds schema domains of attributes at node
         self.join_columns = []		# holds common column names for join
 
+	# added for AGGREGATE
+        self.aggregate_project_list = [] 
+        self.aggregate_groupby_list = [] 
+        self.aggregate_having_condition = [] 
+    
     def get_attributes(self):
         return self.attributes
-
+    
     def get_columns(self):
         return self.columns
-
+    
     def get_conditions(self):
         return self.conditions
 
     def get_right_child(self):
         return self.right_child
-
+    
     def get_left_child(self):
         return self.left_child
 
     def get_domains(self):
         return self.domains
-
+    
     def get_node_type(self):
         return self.node_type
-
+    
     def get_relation_name(self):
         return self.relation_name
 
     def get_join_columns(self):
         return self.join_columns
 
+    def get_aggregate_project_list(self):
+        return self.aggregate_project_list
+
+    def get_aggregate_groupby_list(self):
+        return self.aggregate_groupby_list
+
+    def get_aggregate_having_condition(self):
+        return self.aggregate_having_condition
+
     def set_attributes(self, attributes):
         self.attributes = attributes
-
+    
     def set_conditions(self, conditions):
         self.conditions = conditions
-
+    
     def set_right_child(self, right_node):
         self.right_child = right_node
-
+    
     def set_left_child(self, left_node):
         self.left_child = left_node
-
+    
     def set_columns(self, cols):
         self.columns = cols
 
     def set_domains(self, doms):
         self.domains = doms
-
+    
     def set_node_type(self, n_type):
         self.node_type = n_type
-
+    
     def set_relation_name(self, r_name):
-        self.relation_name = r_name
-
+        self.relation_name = r_name        
+    
     def set_join_columns(self, jc):
-        self.join_columns = jc
+        self.join_columns = jc        
+    
+    def set_aggregate_project_list(self,apl):
+        self.aggregate_project_list = apl
 
-    def print_tree(self, n):
+    def set_aggregate_groupby_list(self,agl):
+        self.aggregate_groupby_list = agl
+
+    def set_aggregate_having_condition(self,hc):
+        self.aggregate_having_condition = hc
+
+    def print_tree(self,n):
         if self.node_type == "relation":
-            print(" "*n, end="")
+            print(" "*n,end="")
             print("NODE TYPE: " + self.node_type + "  ")
-            print(" "*n, end="")
+            print(" "*n,end="")
             print("Relation Name is : " + self.relation_name)
             if self.attributes != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Schema is : " + str(self.attributes))
             if self.domains != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Datatypes is : " + str(self.domains)+"\n")
         elif self.node_type == "project" or self.node_type == "rename":
-            print(" "*n, end="")
+            print(" "*n,end="")
             print("NODE TYPE: " + self.node_type + "  ")
-            print(" "*n, end="")
+            print(" "*n,end="")
             print("Atributes are : "+str(self.columns))
             if self.relation_name != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Relation Name is : " + self.relation_name)
             if self.attributes != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Schema is : " + str(self.attributes))
             if self.domains != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Datatypes is : " + str(self.domains)+"\n")
             self.left_child.print_tree(n+4)
         elif self.node_type == "select":
-            print(" "*n, end="")
+            print(" "*n,end="")
             print("NODE TYPE: " + self.node_type + "  ")
             for cond in self.conditions:
-                print(" "*n, end="")
-                print(cond[0], end="")
-                print(":", end="")
-                print(cond[1], end="")
-                print(":", end="")
-                print(cond[2], end="")
-                print(":", end="")
-                print(cond[3], end="")
-                print(":", end="")
+                print(" "*n,end="")
+                print(cond[0],end="")
+                print(":",end="")
+                print(cond[1],end="")
+                print(":",end="")
+                print(cond[2],end="")
+                print(":",end="")
+                print(cond[3],end="")
+                print(":",end="")
                 print(cond[4])
             if self.relation_name != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Relation Name is : " + self.relation_name)
             if self.attributes != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Schema is : " + str(self.attributes))
             if self.domains != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Datatypes is : " + str(self.domains)+"\n")
             self.left_child.print_tree(n+4)
-        elif self.node_type in ["union", "minus", "join", "intersect", "times"]:
-            print(" "*n, end="")
+        elif self.node_type in ["union","minus","join","intersect","times"]:
+            print(" "*n,end="")
             print("NODE TYPE: "+self.node_type+"  ")
             if self.relation_name != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Relation Name is : " + self.relation_name)
             if self.attributes != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Schema is : " + str(self.attributes))
             if self.domains != None:
-                print(" "*n, end="")
+                print(" "*n,end="")
                 print("Datatypes is : " + str(self.domains)+"\n")
             self.left_child.print_tree(n+4)
             self.right_child.print_tree(n+4)
+        elif self.node_type == "aggregate1":
+            print(" "*n,end="")
+            print("NODE TYPE: " + self.node_type + "  ")
+            print(" "*n,end="")
+            print("Rename Atributes are : "+str(self.columns),end="")
+            print("Project Atributes are : "+str(self.aggregate_project_list))
+            self.left_child.print_tree(n+4)
+        elif self.node_type == "aggregate2":
+            print(" "*n,end="")
+            print("NODE TYPE: " + self.node_type + "  ")
+            print(" "*n,end="")
+            print("Rename Atributes are : "+str(self.columns),end="")
+            print("Project Atributes are : "+str(self.aggregate_project_list),end="")
+            print("Groupby Atributes are : "+str(self.aggregate_groupby_list))
+            self.left_child.print_tree(n+4)
+        elif self.node_type == "aggregate3":
+            print(" "*n,end="")
+            print("NODE TYPE: " + self.node_type + "  ")
+            print(" "*n,end="")
+            print("Rename Atributes are : "+str(self.columns),end="")
+            print("Project Atributes are : "+str(self.aggregate_project_list),end="")
+            print("Groupby Atributes are : "+str(self.aggregate_groupby_list),end="")
+            print("Having condition is : "+str(self.aggregate_having_condition))
+            self.left_child.print_tree(n+4)
         else:
             pass
 
@@ -514,8 +631,6 @@ def set_temp_table_names(tree):
 
 # perform semantic checks; set tree.attributes and tree.domains along the way
 # return "OK" or ERROR message
-
-
 def semantic_checks(tree, db):
     if tree.get_node_type() == 'relation':
         rname = tree.get_relation_name()
@@ -708,138 +823,272 @@ def semantic_checks(tree, db):
         )
 
         return 'OK'
+    
+    if tree.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
+        status = semantic_checks(tree.get_left_child(), db)
+        if status != 'OK':
+            return status
+
+        relation_attrs = tree.get_left_child().get_attributes()
+        relation_doms = tree.get_left_child().get_domains()
+
+        agg_project_list = tree.get_aggregate_project_list()
+        agg_groupby_list = tree.get_aggregate_groupby_list() if tree.get_node_type() in ['aggregate2', 'aggregate3'] else []
+        agg_having_condition = tree.get_aggregate_having_condition() if tree.get_node_type() == 'aggregate3' else []
+
+        # Validate attributes in the projection list
+        for attr in agg_project_list:
+            if attr[0] == 'id':  # Regular attribute
+                col_name = attr[1]
+                if col_name not in relation_attrs:
+                    return f"SEMANTIC ERROR (AGGREGATE): Column '{col_name}' does not exist in the relation."
+                if tree.get_node_type() != 'aggregate1' and col_name not in agg_groupby_list:
+                    return f"SEMANTIC ERROR (AGGREGATE): Column '{col_name}' must be in GROUP BY or used in an aggregate function."
+            elif attr[0] == 'agg':  # Aggregate function
+                func_name, col_name = attr[1]
+                if col_name not in relation_attrs:
+                    return f"SEMANTIC ERROR (AGGREGATE): Cannot apply '{func_name}' on non-existent column '{col_name}'."
+                if func_name.upper() not in ['SUM', 'AVG', 'COUNT', 'MIN', 'MAX']:
+                    return f"SEMANTIC ERROR (AGGREGATE): Unsupported aggregate function '{func_name}'."
+
+        # Validate GROUP BY attributes
+        for group_attr in agg_groupby_list:
+            if group_attr not in relation_attrs:
+                return f"SEMANTIC ERROR (AGGREGATE): GROUP BY column '{group_attr}' does not exist."
+
+        # Validate HAVING conditions
+        for condition in agg_having_condition:
+            left_type, left_op = condition[0], condition[1]
+            right_type, right_op = condition[3], condition[4]
+
+            # Ensure operands are either aggregates or valid attributes
+            if left_type == 'id' and left_op not in relation_attrs:
+                return f"SEMANTIC ERROR (AGGREGATE): HAVING condition references non-existent column '{left_op}'."
+            if right_type == 'id' and right_op not in relation_attrs:
+                return f"SEMANTIC ERROR (AGGREGATE): HAVING condition references non-existent column '{right_op}'."
+
+        tree.set_attributes([col[1] if col[0] == 'id' else f"{col[1][0]}({col[1][1]})" for col in agg_project_list])
+        tree.set_domains(["INTEGER" for _ in tree.get_attributes()])  # Assume integer for aggregates
+
+        # print("Tree after semantic checks:")
+        #tree.print_tree(0)
+        return 'OK'
+
+    return 'OK'
+    
+    
 
 # given the relational algebra expression tree, generate an equivalent
 # sqlite3 query.
 
 
 def generateSQL(tree, db):
+    #print("Tree before generatesql")
+    #tree.print_tree(0)
     if tree.get_node_type() == 'relation':
-        return "select * from "+tree.get_relation_name()
+        query = f"SELECT * FROM {tree.get_relation_name()}"
+        #print("Generated SQL Query (relation):", query)
+        return query
+
     elif tree.get_node_type() == "union":
         lquery = generateSQL(tree.get_left_child(), db)
         rquery = generateSQL(tree.get_right_child(), db)
         return lquery+" union "+rquery
+
     elif tree.get_node_type() == "times":
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
+            lquery = f"({lquery})"
         rquery = generateSQL(tree.get_right_child(), db)
         if tree.get_right_child().get_node_type() == "union":
-            rquery = "("+rquery+")"
-        return "select * from " + \
-               "(("+lquery+") "+tree.get_left_child().get_relation_name()+"), " + \
-               "(("+rquery+") "+tree.get_right_child().get_relation_name()+")"
+            rquery = f"({rquery})"
+        query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()}, ({rquery}) {tree.get_right_child().get_relation_name()}"
+        #print("Generated SQL Query (times):", query)
+        return query
+
     elif tree.get_node_type() == "project":
         lquery = generateSQL(tree.get_left_child(), db)
-        query = "select "
+        query = "SELECT "
 
         for attr in tree.get_columns():
             query += f"{attr}, "
 
-        query = query[:-2] 
-        query += f" from ({lquery})"
+        query = query[:-2]
+        query += f" FROM ({lquery})"
 
         non_aggregate_cols = [col for col in tree.get_columns() if '(' not in col]
         if non_aggregate_cols:
-            query += f" group by {', '.join(non_aggregate_cols)}"
+            query += f" GROUP BY {', '.join(non_aggregate_cols)}"
 
+        #print("Generated SQL Query (project):", query)
         return query
 
     elif tree.get_node_type() == "rename":
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
-        query = "select "
+            lquery = f"({lquery})"
+        query = "SELECT "
         for i, attr in enumerate(tree.get_attributes()):
-            query += tree.get_left_child().get_attributes()[i]+" "+attr+", "
+            query += f"{tree.get_left_child().get_attributes()[i]} AS {attr}, "
         query = query[:-2]
-        query += " from ("+lquery+") " + \
-            tree.get_left_child().get_relation_name()
+        query += f" FROM ({lquery}) {tree.get_left_child().get_relation_name()}"
+        #print("Generated SQL Query (rename):", query)
         return query
+
     elif tree.get_node_type() == "select":
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
-        query = "select * from (("+lquery+") " + \
-            tree.get_left_child().get_relation_name()+") where "
+            lquery = f"({lquery})"
+        query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()} WHERE "
         for condition in tree.get_conditions():
             c1 = condition[1]
             if condition[0] == 'str':
-                c1 = '\''+c1+'\''
+                c1 = f"'{c1}'"
             c4 = condition[4]
             if condition[3] == 'str':
-                c4 = '\''+c4+'\''
+                c4 = f"'{c4}'"
             if condition[2] == 'LIKE':
-                query += f"{c1} LIKE {c4} and "
+                query += f"{c1} LIKE {c4} AND "
             else:
-                query += str(c1)+str(condition[2])+str(c4)+" and "
+                query += f"{c1} {condition[2]} {c4} AND "
 
-        query = query[:-5] 
+        query = query[:-5]
+        #print("Generated SQL Query (select):", query)
         return query
 
     elif tree.get_node_type() == "join":
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
+            lquery = f"({lquery})"
         rquery = generateSQL(tree.get_right_child(), db)
         if tree.get_right_child().get_node_type() == "union":
-            rquery = "("+rquery+")"
-        query = "select distinct "
+            rquery = f"({rquery})"
+        query = "SELECT DISTINCT "
         for attr in tree.get_attributes():
             if attr in tree.get_join_columns():
-                query += tree.get_left_child().get_relation_name()+"."+attr+", "
+                query += f"{tree.get_left_child().get_relation_name()}.{attr}, "
             else:
-                query += attr+", "
+                query += f"{attr}, "
         query = query[:-2]
-        query += " from " + \
-                 "("+lquery+") "+tree.get_left_child().get_relation_name()+", " + \
-                 "("+rquery+") "+tree.get_right_child().get_relation_name()
+        query += f" FROM ({lquery}) {tree.get_left_child().get_relation_name()}, ({rquery}) {tree.get_right_child().get_relation_name()}"
         if len(tree.get_join_columns()) == 0:
+            #print("Generated SQL Query (join):", query)
             return query
-        query += " where "
+        query += " WHERE "
         for col in tree.get_join_columns():
-            query += tree.get_left_child().get_relation_name()+"."+col+"=" + \
-                tree.get_right_child().get_relation_name()+"."+col+" and "
+            query += f"{tree.get_left_child().get_relation_name()}.{col} = {tree.get_right_child().get_relation_name()}.{col} AND "
         query = query[:-5]
+        #print("Generated SQL Query (join):", query)
         return query
+
     elif tree.get_node_type() == "intersect":
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
+            lquery = f"({lquery})"
         rquery = generateSQL(tree.get_right_child(), db)
         if tree.get_right_child().get_node_type() == "union":
-            rquery = "("+rquery+")"
-        query = "select * from ("+lquery+") "+tree.get_left_child().get_relation_name() + \
-                " where ("
+            rquery = f"({rquery})"
+        query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()} WHERE ("
         for attr in tree.get_attributes():
-            query += attr+", "
-        query = query[:-2] + ") in "
-        query += "(select * from ("+rquery+") " + \
-            tree.get_right_child().get_relation_name()
-        query += ")"
+            query += f"{attr}, "
+        query = query[:-2] + ") IN "
+        query += f"(SELECT * FROM ({rquery}) {tree.get_right_child().get_relation_name()})"
+        #print("Generated SQL Query (intersect):", query)
         return query
+
+    elif tree.get_node_type() == "aggregate1":
+        lquery = generateSQL(tree.get_left_child(), db)
+        query = "SELECT "
+
+        for i, attr in enumerate(tree.get_aggregate_project_list()):
+            if i < len(tree.get_columns()):
+                if attr[0] == 'agg':
+                    query += f"{attr[1][0]}({attr[1][1]}) AS {tree.get_columns()[i]}, "
+                else:
+                    query += f"{attr[1]} AS {tree.get_columns()[i]}, "
+
+        query = query[:-2]
+        query += f" FROM ({lquery})"
+
+        #print("Generated SQL Query (aggregate1):", query)
+        return query
+
+    elif tree.get_node_type() == "aggregate2":
+        lquery = generateSQL(tree.get_left_child(), db)
+        query = "SELECT "
+
+        for i, attr in enumerate(tree.get_aggregate_project_list()):
+            if i < len(tree.get_columns()):
+                if attr[0] == 'agg':
+                    query += f"{attr[1][0]}({attr[1][1]}) AS {tree.get_columns()[i]}, "
+                else:
+                    query += f"{attr[1]} AS {tree.get_columns()[i]}, "
+
+        query = query[:-2]
+        query += f" FROM ({lquery})"
+
+        groupby_list = tree.get_aggregate_groupby_list()
+        if groupby_list:
+            query += f" GROUP BY {', '.join(groupby_list)}"
+
+        #print("Generated SQL Query (aggregate2):", query)
+        return query
+
+    elif tree.get_node_type() == "aggregate3":
+        lquery = generateSQL(tree.get_left_child(), db)
+        query = "SELECT "
+
+        for i, attr in enumerate(tree.get_aggregate_project_list()):
+            if i < len(tree.get_columns()):
+                if attr[0] == 'agg':
+                    query += f"{attr[1][0]}({attr[1][1]}) AS {tree.get_columns()[i]}, "
+                else:
+                    query += f"{attr[1]} AS {tree.get_columns()[i]}, "
+
+        query = query[:-2]
+        query += f" FROM ({lquery})"
+
+        groupby_list = tree.get_aggregate_groupby_list()
+        if groupby_list:
+            query += f" GROUP BY {', '.join(groupby_list)}"
+
+        having_conditions = tree.get_aggregate_having_condition()
+        if having_conditions:
+            query += " HAVING "
+            for condition in having_conditions:
+                c1 = condition[1]
+                if condition[0] == 'str':
+                    c1 = f"'{c1}'"
+                c4 = condition[4]
+                if condition[3] == 'str':
+                    c4 = f"'{c4}'"
+                if condition[2] == 'LIKE':
+                    query += f"{c1} LIKE {c4} AND "
+                else:
+                    query += f"{c1} {condition[2]} {c4} AND "
+            query = query[:-5]
+
+        #print("Generated SQL Query (aggregate3):", query)
+        return query
+
     else:
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
-            lquery = "("+lquery+")"
+            lquery = f"({lquery})"
         rquery = generateSQL(tree.get_right_child(), db)
         if tree.get_right_child().get_node_type() == "union":
-            rquery = "("+rquery+")"
-        query = "select * from ("+lquery+") "+tree.get_left_child().get_relation_name() + \
-                " where ("
+            rquery = f"({rquery})"
+        query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()} WHERE ("
         for attr in tree.get_attributes():
-            query += attr+", "
-        query = query[:-2] + ") not in "
-        query += "(select * from ("+rquery+") " + \
-            tree.get_right_child().get_relation_name()
-        query += ")"
+            query += f"{attr}, "
+        query = query[:-2] + ") NOT IN "
+        query += f"(SELECT * FROM ({rquery}) {tree.get_right_child().get_relation_name()})"
+        #print("Generated SQL Query (else):", query)
         return query
+
 
 # ------------------------ Dash app Functions -------------------------------
 # Convert the tree to a JSON object for visualization.
-
-
 def tree_to_json(node, db, node_counter=[0]):
     if node is None:
         return None
@@ -868,6 +1117,12 @@ def tree_to_json(node, db, node_counter=[0]):
         node_json['join_columns'] = node.get_join_columns()
         # Ensure join attributes are qualified
         node_json['attributes'] = node.get_attributes()
+    
+    if node.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
+        node_json['aggregate_project_list'] = node.get_aggregate_project_list()
+        node_json['aggregate_groupby_list'] = node.get_aggregate_groupby_list()
+        node_json['aggregate_having_condition'] = node.get_aggregate_having_condition()
+        node_json['columns'] = node.get_columns()  # Include renamed columns
 
     return node_json
 
@@ -937,9 +1192,13 @@ def json_to_node(json_node):
     if 'join_columns' in json_node:
         node.set_join_columns(json_node.get('join_columns', []))
 
-    # print("Node relation name:", node.get_relation_name())
-    # print("Node columns:", node.get_columns())
-    # print("Node join columns:", node.get_join_columns())
+    if node.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
+        node.set_aggregate_project_list(json_node.get('aggregate_project_list', []))
+        node.set_aggregate_groupby_list(json_node.get('aggregate_groupby_list', []))
+        node.set_aggregate_having_condition(json_node.get('aggregate_having_condition', []))
+        if 'columns' in json_node:
+            node.set_columns(json_node['columns'])
+
     return node
 
 
@@ -957,21 +1216,21 @@ def get_node_info_from_db(node_id, json_tree, db):
         c.execute(query)
         records = c.fetchall()
 
-        columns = [desc[0] for desc in c.description]
+        # Extract SQL output column names
+        sql_columns = [desc[0] for desc in c.description]
 
-        qualified_columns = []
-        for col in columns:
+        # Extract user-defined column names from the node
+        if node.get_columns():
+            renamed_columns = node.get_columns()
+        else:
+            renamed_columns = sql_columns  # Fallback to SQL-generated names
 
-            if col.startswith('TEMP_'):
-                col_name = col.split('.')[-1]
-                qualified_columns.append(col_name)
-            else:
-                qualified_columns.append(col)
-
-        return {'columns': qualified_columns, 'rows': records}
+        # Ensure the frontend table gets user-defined names
+        return {'columns': renamed_columns, 'rows': records}
 
     except Exception as e:
         return {'error': str(e)}
+
 
 
 def fetch_schema_info(db_path):

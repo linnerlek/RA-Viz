@@ -44,15 +44,37 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
         node_label = json_tree.get('relation_name', 'Unknown Relation')
     elif json_tree.get('node_type') == "project":
         attributes = ', '.join(json_tree.get('columns', []))
-        node_label += f"\n{attributes}"
+        node_label = f"Project\n{attributes}"
     elif json_tree.get('node_type') == 'select':
         conditions = [
             f"{cond[1]} {cond[2]} {cond[4]}" for cond in json_tree.get('conditions', [])
         ]
-        node_label += f"\n{' and '.join(conditions)}"
+        node_label = f"Select\n{' and '.join(conditions)}"
     elif json_tree.get('node_type') == 'rename':
         new_columns = ', '.join(json_tree.get('new_columns', []))
-        node_label += f"\n{new_columns}"
+        node_label = f"Rename\n{new_columns}"
+    elif json_tree.get('node_type') in ['aggregate1', 'aggregate2', 'aggregate3']:
+        agg_project_list = json_tree.get('aggregate_project_list', [])
+        agg_groupby_list = json_tree.get('aggregate_groupby_list', [])
+        agg_having_condition = json_tree.get('aggregate_having_condition', [])
+        renamed_columns = json_tree.get('columns', [])
+
+        agg_info = []
+        for i, item in enumerate(agg_project_list):
+            if i < len(renamed_columns):
+                if item[0] == 'id':
+                    agg_info.append(f"{item[1]} AS {renamed_columns[i]}")
+                elif item[0] == 'agg':
+                    agg_info.append(f"{item[1][0]}({item[1][1]}) AS {renamed_columns[i]}")
+
+        node_label = f"Aggregate[\n{', '.join(agg_info)}]"
+        if agg_groupby_list:
+            node_label += f"\nGROUP BY {', '.join(agg_groupby_list)}"
+        if agg_having_condition:
+            having_info = [
+                f"{cond[1]} {cond[2]} {cond[4]}" for cond in agg_having_condition
+            ]
+            node_label += f"\nHAVING {' and '.join(having_info)}"
 
     if y not in level_positions:
         level_positions[y] = []
@@ -453,7 +475,7 @@ def update_tree(n_clicks, selected_db, query):
 
             if 'error' in json_tree:
                 raise Exception(
-                    f"Error in query: {json_tree['error']}. Is the right database selected?")
+                    f"Error in query: {json_tree['error']}.")
 
             elements = json_to_cytoscape_elements(json_tree)
 

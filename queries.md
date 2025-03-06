@@ -119,10 +119,6 @@ Show games where the home team scored more than 5 home runs
 **TIP:** Click to directly insert query
 
 ### Query 1
-Get bcode and bname of buildings whose bname contains the word 'SOUTH':
-```select[bname LIKE '%SOUTH%'](building);
-```
-### Query 2
 Get bcode, rnumber, and cap for rooms with capacity greater than 100:
 ```project[bcode, rnumber, cap](
  select[cap > 100](
@@ -130,7 +126,7 @@ Get bcode, rnumber, and cap for rooms with capacity greater than 100:
  )
 );
 ```
-### Query 3
+### Query 2
 Get cap, layout, and type for room CLSO 206:
 ```project[cap, layout, type](
  select[bcode = 'CLSO' AND rnumber = '206'](
@@ -138,7 +134,7 @@ Get cap, layout, and type for room CLSO 206:
  )
 );
 ```
-### Query 4
+### Query 3
 Get mcode and description for media in room CLSO 206:
 ```project[mcode, description](
  (select[bcode = 'CLSO' AND rnumber = '206'](roommedia))
@@ -146,7 +142,7 @@ Get mcode and description for media in room CLSO 206:
  media
 );
 ```
-### Query 5
+### Query 4
 Get rnumber of rooms in building with bcode = 'CLSO':
 ```project[rnumber](
  select[bcode = 'CLSO'](
@@ -154,15 +150,8 @@ Get rnumber of rooms in building with bcode = 'CLSO':
  )
 );
 ```
-### Query 6
-Get bcode and rnumber for rooms with media description containing the term 'DVD':
-```project[bcode, rnumber](
- select[description LIKE '%DVD%'](
-  (roommedia join media)
- )
-);
-```
-### Query 7
+
+### Query 5
 Get bcode and rnumber for rooms that are P type and owned by dept = 'CSC':
 ```project[bcode, rnumber](
  select[type = 'P' AND dept = 'CSC'](
@@ -170,32 +159,32 @@ Get bcode and rnumber for rooms that are P type and owned by dept = 'CSC':
  )
 );
 ```
-### Query 8
+### Query 6
 Get the number of rooms in the CLSO building:
-```project[COUNT(rnumber)](select[bcode = 'CLSO'](room));
+```aggregate[(total_rooms), (COUNT(rnumber))](select[bcode = 'CLSO'](room));
+```
+### Query 7
+Get the number of rooms for each building:
+```aggregate[(bcode, total_rooms), (bcode, COUNT(rnumber)), (bcode)](room);
+```
+### Query 8
+Get the number of rooms that have ELMO media:
+```aggregate[(total_rooms), (COUNT(mcode))](select[mcode = 'ELMO'](roommedia));
 ```
 ### Query 9
-Get the number of rooms for each building:
-```project[bcode, COUNT(rnumber)](room);
+Get the number of rooms for each media type:
+```aggregate[(mcode, total_rooms), (mcode, COUNT(mcode)), (mcode)](roommedia);
 ```
-### Query 10 
-Get the number of rooms that have ELMO media:
-```project[COUNT(mcode)](select[mcode = 'ELMO'](roommedia));
+### Query 10
+Get the total number of seats in all classrooms in CLSO:
+```aggregate[(total_seats), (SUM(cap))](select[bcode = 'CLSO'](room));
 ```
 ### Query 11
-Get the number of rooms for each media type:
-```project[mcode, COUNT(mcode)](roommedia);
+Get total number of seats in each building
+```aggregate[(bcode, total_seats), (bcode, sum(cap)), (bcode)](room);
 ```
 ### Query 12
-Get the total number of seats in all classrooms in CLSO:
-```project[SUM(cap)](select[bcode = 'CLSO'](room));
-```
-### Query 13
-Get total number of seats in each building
-```project[bcode, SUM(cap)](room);
-```
-### Query 14
 Get total number of seats in all classrooms
-```project[SUM(cap)](room);
+```aggregate[(total_seats), (SUM(cap))](room);
 ```
 </div>
