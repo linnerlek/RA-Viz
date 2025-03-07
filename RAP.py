@@ -773,26 +773,56 @@ def semantic_checks(tree, db):
             return status
 
         p_attrs = tree.get_columns()
-        attrs = tree.get_left_child().get_attributes()
-        doms = tree.get_left_child().get_domains()
+        
+        # Check if child is an aggregate or join with aggregate
+        left_child = tree.get_left_child()
+        has_aggregate = False
+        if left_child.get_node_type() == "join":
+            left_grandchild = left_child.get_left_child()
+            right_grandchild = left_child.get_right_child()
+            has_aggregate = (left_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3'] or 
+                            right_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3'])
+        
+        attrs = left_child.get_attributes()
+        doms = left_child.get_domains()
 
         for attr in p_attrs:
             if '(' in attr and ')' in attr:
+                # Handle aggregate function
                 func_name, col_name = attr.split('(')
                 col_name = col_name.strip(')')
 
-                if func_name.upper() not in ['COUNT', 'SUM']:
+                if func_name.upper() not in ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX']:
                     return f"SEMANTIC ERROR (PROJECT): Unsupported aggregate function {func_name}"
 
                 if col_name != '*' and col_name not in attrs:
                     return f"SEMANTIC ERROR (PROJECT): Attribute {col_name} does not exist for aggregate {func_name}({col_name})"
             else:
+                # For a join with aggregate, the attribute names might come from either side
+                # or might be an aggregate result renamed to a simple name
                 if attr not in attrs:
+                    # Special handling for join with aggregate - the attribute might be a renamed column
+                    if has_aggregate:
+                        # Look for columns in the left child's columns if it's an aggregate
+                        if left_child.get_node_type() == "join":
+                            left_grandchild = left_child.get_left_child()
+                            right_grandchild = left_child.get_right_child()
+                            
+                            if left_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
+                                if attr in left_grandchild.get_columns():
+                                    # Found in left child's aggregate columns
+                                    continue
+                            
+                            if right_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
+                                if attr in right_grandchild.get_columns():
+                                    # Found in right child's aggregate columns
+                                    continue
+                    
                     return f"SEMANTIC ERROR (PROJECT): Attribute {attr} does not exist"
+        
         tree.set_attributes(p_attrs)
-        tree.set_domains(["INTEGER" for _ in p_attrs])
+        tree.set_domains(["INTEGER" for _ in p_attrs])  # Simplification
         return 'OK'
-
 
     if tree.get_node_type() == 'rename':
         status = semantic_checks(tree.get_left_child(), db)
@@ -891,36 +921,76 @@ def generateSQL(tree, db):
         return query
 
     elif tree.get_node_type() == "union":
+        left_is_aggregate = tree.get_left_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        right_is_aggregate = tree.get_right_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        
         lquery = generateSQL(tree.get_left_child(), db)
         rquery = generateSQL(tree.get_right_child(), db)
-        return lquery+" union "+rquery
+        
+        if left_is_aggregate or right_is_aggregate:
+            lquery = f"({lquery})"
+            rquery = f"({rquery})"
+        
+        return f"{lquery} UNION {rquery}"
 
     elif tree.get_node_type() == "times":
+        left_is_aggregate = tree.get_left_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        right_is_aggregate = tree.get_right_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        
         lquery = generateSQL(tree.get_left_child(), db)
         if tree.get_left_child().get_node_type() == "union":
             lquery = f"({lquery})"
+        
         rquery = generateSQL(tree.get_right_child(), db)
         if tree.get_right_child().get_node_type() == "union":
             rquery = f"({rquery})"
+        
         query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()}, ({rquery}) {tree.get_right_child().get_relation_name()}"
-        #print("Generated SQL Query (times):", query)
         return query
 
     elif tree.get_node_type() == "project":
         lquery = generateSQL(tree.get_left_child(), db)
         query = "SELECT "
 
+        # Check if we're projecting from a join that includes an aggregate
+        left_child = tree.get_left_child()
+        if left_child.get_node_type() == "join":
+            left_grandchild = left_child.get_left_child()
+            right_grandchild = left_child.get_right_child()
+            left_has_aggregate = left_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+            right_has_aggregate = right_grandchild.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+            
+            if left_has_aggregate or right_has_aggregate:
+                # Print detailed SQL query for debugging
+                # print(f"Generated JOIN SQL: {lquery}")
+                
+                # For columns from the aggregate result, we need to ensure the correct reference
+                for attr in tree.get_columns():
+                    # To handle the case where we need BNAME and TOTAL_SEATS from a joined result
+                    if left_has_aggregate and attr in left_grandchild.get_columns():
+                        query += f"{attr}, "  # No table qualification needed in outer projection
+                    elif right_has_aggregate and attr in right_grandchild.get_columns():
+                        query += f"{attr}, "  # No table qualification needed in outer projection
+                    else:
+                        # Regular column, not from aggregate
+                        query += f"{attr}, "
+                
+                query = query[:-2]
+                query += f" FROM ({lquery})"
+                return query
+
+        # Standard project operation (no special aggregate handling needed)
         for attr in tree.get_columns():
             query += f"{attr}, "
 
         query = query[:-2]
         query += f" FROM ({lquery})"
 
+        # Only include GROUP BY for non-aggregate columns in standard projections
         non_aggregate_cols = [col for col in tree.get_columns() if '(' not in col]
-        if non_aggregate_cols:
+        if non_aggregate_cols and not (tree.get_left_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']):
             query += f" GROUP BY {', '.join(non_aggregate_cols)}"
 
-        #print("Generated SQL Query (project):", query)
         return query
 
     elif tree.get_node_type() == "rename":
@@ -937,7 +1007,8 @@ def generateSQL(tree, db):
 
     elif tree.get_node_type() == "select":
         lquery = generateSQL(tree.get_left_child(), db)
-        if tree.get_left_child().get_node_type() == "union":
+        left_is_aggregate = tree.get_left_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        if tree.get_left_child().get_node_type() == "union" or left_is_aggregate:
             lquery = f"({lquery})"
         query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()} WHERE "
         for condition in tree.get_conditions():
@@ -957,28 +1028,66 @@ def generateSQL(tree, db):
         return query
 
     elif tree.get_node_type() == "join":
+        left_is_aggregate = tree.get_left_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        right_is_aggregate = tree.get_right_child().get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']
+        
         lquery = generateSQL(tree.get_left_child(), db)
-        if tree.get_left_child().get_node_type() == "union":
+        if tree.get_left_child().get_node_type() == "union" or left_is_aggregate:
             lquery = f"({lquery})"
+        
         rquery = generateSQL(tree.get_right_child(), db)
-        if tree.get_right_child().get_node_type() == "union":
+        if tree.get_right_child().get_node_type() == "union" or right_is_aggregate:
             rquery = f"({rquery})"
-        query = "SELECT DISTINCT "
-        for attr in tree.get_attributes():
-            if attr in tree.get_join_columns():
-                query += f"{tree.get_left_child().get_relation_name()}.{attr}, "
-            else:
-                query += f"{attr}, "
-        query = query[:-2]
-        query += f" FROM ({lquery}) {tree.get_left_child().get_relation_name()}, ({rquery}) {tree.get_right_child().get_relation_name()}"
-        if len(tree.get_join_columns()) == 0:
-            #print("Generated SQL Query (join):", query)
-            return query
-        query += " WHERE "
-        for col in tree.get_join_columns():
-            query += f"{tree.get_left_child().get_relation_name()}.{col} = {tree.get_right_child().get_relation_name()}.{col} AND "
-        query = query[:-5]
-        #print("Generated SQL Query (join):", query)
+        
+        left_alias = tree.get_left_child().get_relation_name()
+        right_alias = tree.get_right_child().get_relation_name()
+        
+        # Determine columns for both sides
+        left_columns = tree.get_left_child().get_columns() if left_is_aggregate else tree.get_left_child().get_attributes()
+        right_columns = tree.get_right_child().get_columns() if right_is_aggregate else tree.get_right_child().get_attributes()
+        
+        query = "SELECT "  # No DISTINCT to simplify
+        
+        # Include all required columns with proper references
+        join_columns_added = set()
+        
+        # First add join columns (usually from both sides)
+        for join_col in tree.get_join_columns():
+            query += f"{left_alias}.{join_col} AS {join_col}, "
+            join_columns_added.add(join_col)
+        
+        # Add columns from left side (including aggregate results)
+        if left_is_aggregate:
+            for col in left_columns:
+                if col not in join_columns_added:
+                    # For aggregate operations, columns already have aliases set
+                    query += f"{left_alias}.{col} AS {col}, "
+        else:
+            for col in tree.get_left_child().get_attributes():
+                if col not in join_columns_added:
+                    query += f"{left_alias}.{col} AS {col}, "
+        
+        # Add columns from right side (including aggregate results)
+        if right_is_aggregate:
+            for col in right_columns:
+                if col not in join_columns_added:
+                    query += f"{right_alias}.{col} AS {col}, "
+        else:
+            for col in tree.get_right_child().get_attributes():
+                if col not in join_columns_added and col not in tree.get_join_columns():
+                    query += f"{right_alias}.{col} AS {col}, "
+        
+        query = query[:-2]  # Remove trailing ", "
+        
+        query += f" FROM ({lquery}) {left_alias}, ({rquery}) {right_alias}"
+        
+        # Add join conditions
+        if len(tree.get_join_columns()) > 0:
+            query += " WHERE "
+            for col in tree.get_join_columns():
+                query += f"{left_alias}.{col} = {right_alias}.{col} AND "
+            query = query[:-5]  # Remove trailing " AND "
+        
         return query
 
     elif tree.get_node_type() == "intersect":
@@ -1071,8 +1180,6 @@ def generateSQL(tree, db):
                 else:
                     query += f"{c1} {condition[2]} {c4} AND "
             query = query[:-5]
-
-        #print("Generated SQL Query (aggregate3):", query)
         return query
 
     else:
