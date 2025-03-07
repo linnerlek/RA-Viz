@@ -442,28 +442,30 @@ def display_schema_info(selected_db):
 
 
 @app.callback(
-    [Output('cytoscape-tree', 'elements'),
-     Output('tree-store', 'data'),
-     Output('db-path-store', 'data'),
-     Output('error-div', 'children'),
-     Output('error-div', 'style')],
+    [Output('cytoscape-tree', 'elements', allow_duplicate=True),
+     Output('tree-store', 'data', allow_duplicate=True),
+     Output('db-path-store', 'data', allow_duplicate=True),
+     Output('error-div', 'children', allow_duplicate=True),
+     Output('error-div', 'style', allow_duplicate=True),
+     Output('node-table-placeholder', 'children', allow_duplicate=True)],
     [Input('submit-btn', 'n_clicks'),
      Input('db-dropdown', 'value')],
-    [State('query-input', 'value')]
+    [State('query-input', 'value')],
+    prevent_initial_call=True
 )
 def update_tree(n_clicks, selected_db, query):
     ctx = dash.callback_context
     if ctx.triggered and ctx.triggered[0]['prop_id'].startswith('db-dropdown'):
-        return [], {}, "", "", {'display': 'none'}
+        return [], {}, "", "", {'display': 'none'}, "Click node to see info."
 
     if n_clicks is None:
-        return [], {}, "", "", {'display': 'none'}
+        return [], {}, "", "", {'display': 'none'}, "Click node to see info."
 
     if not selected_db:
-        return [], {}, "", "Please select a database.", {'display': 'block'}
+        return [], {}, "", "Please select a database.", {'display': 'block'}, "Click node to see info."
 
     if not query:
-        return [], {}, "", "Please enter a query.", {'display': 'block'}
+        return [], {}, "", "Please enter a query.", {'display': 'block'}, "Click node to see info."
 
     if n_clicks and selected_db and query:
         try:
@@ -474,27 +476,28 @@ def update_tree(n_clicks, selected_db, query):
             json_tree = generate_tree_from_query(query, db, node_counter=[0])
 
             if 'error' in json_tree:
-                raise Exception(
-                    f"Error in query: {json_tree['error']}.")
+                raise Exception(f"Error in query: {json_tree['error']}.")
 
             elements = json_to_cytoscape_elements(json_tree)
 
             db.close()
 
-            return elements, json_tree, db_path, "", {'display': 'none'}
+            # Clear the node table placeholder when a new query is submitted
+            return elements, json_tree, db_path, "", {'display': 'none'}, "Click node to see info."
 
         except Exception as e:
             # Show the error message
-            return [], {}, str(e), str(e), {'display': 'block'}
+            return [], {}, str(e), str(e), {'display': 'block'}, "Click node to see info."
 
 
 @app.callback(
-    [Output('node-table-placeholder', 'children'),
+    [Output('node-table-placeholder', 'children', allow_duplicate=True),
      Output('row-count', 'data')],
     [Input('cytoscape-tree', 'tapNodeData'),
      Input('db-dropdown', 'value'),
      Input('current-page', 'data')],
-    [State('tree-store', 'data'), State('db-path-store', 'data')]
+    [State('tree-store', 'data'), State('db-path-store', 'data')],
+    prevent_initial_call=True
 )
 def display_node_info(node_data, selected_db, current_page, json_tree, db_path):
     ctx = dash.callback_context
@@ -581,5 +584,5 @@ app.clientside_callback(
 
 
 if __name__ == '__main__':
-    # app.run_server(debug=True)
+    #app.run_server(debug=True)
     app.run_server(host='0.0.0.0', port=5020)
