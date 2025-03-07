@@ -2,6 +2,9 @@
 
 This application is a `Dash`-based tool for visualizing relational algebra queries. It includes an interactive graphical interface for constructing and displaying relational operations using `dash-cytoscape`.
 
+<img width="1000" alt="Screenshot 2025-03-07 at 11 29 52 AM" src="https://github.com/user-attachments/assets/a8b42062-95c0-41d3-8fa2-6d2a7a7c0901" />
+
+
 ## Prerequisites
 
 Ensure you have Python 3.11+ and SQLite3 installed. The following libraries are required:
@@ -78,6 +81,33 @@ The application supports the following relational algebra operations:
 - **`intersect:`** Returns only the rows that are present in both queries.
 - **`times:`** Computes the Cartesian product, specifically handled with relational naming for clear output.
 - **`minus:`** Returns rows from the first query that are not present in the second.
+- **`aggregate:`** Performs aggregate operations such as `SUM`, `AVG`, `COUNT`, `MIN`, and `MAX`.
+
+#### Aggregate Operations
+The `aggregate` operation supports the following forms:
+
+1. **Without Group By and Having:**
+```
+aggregate[(renamed_attr1, renamed_attr2, ...), (operation(column1), operation(column2), ...)](relation)
+```
+   - **renamed_attr1, renamed_attr2, ...**: New names for the attributes resulting from the aggregate operations.
+   - **operation(column1), operation(column2), ...**: Aggregate functions (`SUM`, `AVG`, `COUNT`, `MIN`, `MAX`) applied to the specified columns.
+   - **relation**: The relation (table) on which the aggregate functions are applied.
+
+2. **With Group By:**
+```
+aggregate[(renamed_attr1, renamed_attr2, ...), (operation(column1), operation(column2), ...), (group_attr1, group_attr2, ...)](relation)
+```
+   - **group_attr1, group_attr2, ...**: Attributes to group by.
+
+
+3. **With Group By and Having:**
+```
+aggregate[(renamed_attr1, renamed_attr2, ...), (operation(column1), operation(column2), ...), (group_attr1, group_attr2, ...), (condition1, condition2, ...)](relation)
+```
+   - **condition1, condition2, ...**: Conditions for the HAVING clause.
+
+
 
 ## Troubleshooting
 

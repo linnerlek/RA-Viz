@@ -1057,10 +1057,14 @@ def generateSQL(tree, db):
             query += " HAVING "
             for condition in having_conditions:
                 c1 = condition[1]
-                if condition[0] == 'str':
+                if condition[0] == 'agg':
+                    c1 = f"{condition[1][0]}({condition[1][1]})"
+                elif condition[0] == 'str':
                     c1 = f"'{c1}'"
                 c4 = condition[4]
-                if condition[3] == 'str':
+                if condition[3] == 'agg':
+                    c4 = f"{condition[4][0]}({condition[4][1]})"
+                elif condition[3] == 'str':
                     c4 = f"'{c4}'"
                 if condition[2] == 'LIKE':
                     query += f"{c1} LIKE {c4} AND "
