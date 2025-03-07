@@ -119,8 +119,8 @@ Show games where the home team scored more than 5 home runs
 **TIP:** Click to directly insert query
 
 ### Query 1
-Get buildings with more than 750 total seats and their name:
-```project[bname, total_seats](aggregate[(bcode, total_seats), (bcode, sum(cap)), (bcode),(sum(cap)>750)](room) join building);
+Get names of buildings which have more than 750 seat capacity in total.
+```project[bname](aggregate[(bcode, total_seats), (bcode, sum(cap)), (bcode),(sum(cap)>750)](room) join building);
 ```
 
 ### Query 2
