@@ -538,8 +538,11 @@ def display_node_info(node_data, selected_db, current_page, json_tree, db_path):
                     html.Tbody(table_body)
                 ]
             )
-
-            return result_table, total_rows
+            
+            return html.Div([
+                html.P(f"Number of tuples: {total_rows}", className="tuple-count"),
+                result_table
+            ]), total_rows
 
         except Exception as e:
             return f"Error occurred: {str(e)}", 0

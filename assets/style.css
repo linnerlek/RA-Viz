@@ -218,6 +218,12 @@ html {
   background-color: #05508d;
 }
 
+.tuple-count {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
 /*
   ************** RIGHT SECTION **************
 */
