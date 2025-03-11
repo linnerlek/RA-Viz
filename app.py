@@ -551,23 +551,39 @@ def display_node_info(node_data, selected_db, current_page, json_tree, db_path):
 
 
 @app.callback(
-    [Output("current-page", "data"),
-     Output("prev-clicks", "data"),
-     Output("next-clicks", "data")],
+    [Output("current-page", "data", allow_duplicate=True),
+     Output("prev-clicks", "data", allow_duplicate=True),
+     Output("next-clicks", "data", allow_duplicate=True)],
     [Input("prev-page-btn", "n_clicks"),
-     Input("next-page-btn", "n_clicks")],
+     Input("next-page-btn", "n_clicks"),
+     Input('cytoscape-tree', 'tapNodeData'), 
+     Input('submit-btn', 'n_clicks')],    
     [State("current-page", "data"),
      State("prev-clicks", "data"),
-     State("next-clicks", "data")]
+     State("next-clicks", "data"),
+     State("row-count", "data")],
+    prevent_initial_call=True
 )
-def update_page(prev_clicks, next_clicks, current_page, last_prev_clicks, last_next_clicks):
-    prev_clicks_delta = prev_clicks - last_prev_clicks
-    next_clicks_delta = next_clicks - last_next_clicks
+def update_page(prev_clicks, next_clicks, node_data, submit_clicks, 
+                current_page, last_prev_clicks, last_next_clicks, row_count):
+    ctx = dash.callback_context
+    trigger = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
+    
+    if trigger in ['cytoscape-tree', 'submit-btn']:
+        return 0, 0, 0
+    
+    rows_per_page = 8
+    max_page = max(0, (row_count - 1) // rows_per_page) if row_count else 0
+    
+    if trigger == 'prev-page-btn' and prev_clicks > last_prev_clicks:
+        new_page = max(0, current_page - 1)
+    elif trigger == 'next-page-btn' and next_clicks > last_next_clicks:
+        new_page = min(max_page, current_page + 1)
+    else:
+        new_page = current_page
 
-    new_page = current_page + next_clicks_delta - prev_clicks_delta
-
-    new_page = max(new_page, 0)
-
+    new_page = max(0, min(new_page, max_page))
+    
     return new_page, prev_clicks, next_clicks
 
 
