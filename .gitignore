@@ -1,1 +1,4 @@
 __pycache__/
+.raviz/ #my virtual environment
+parser.out
+parsetab.py 
