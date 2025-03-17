@@ -4,22 +4,25 @@ This application is a `Dash`-based tool for visualizing relational algebra queri
 
 <img width="1000" alt="Screenshot 2025-03-07 at 11 29 52 AM" src="https://github.com/user-attachments/assets/a8b42062-95c0-41d3-8fa2-6d2a7a7c0901" />
 
----
 
 ## Installation
 - Ensure you have:
    - **Python 3.11+**
    - **SQLite3**
-<br>
+
 - Clone the Repository:
+  
    ```bash
    git clone https://github.com/linnerlek/RA-Viz.git
    cd RA-Viz/
    ```
+   
 - Install Dependencies:
+  
    ```bash
    pip3 install -r requirements.txt
    ```
+   
 - Start the application with:
    ```bash
    python3 app.py
