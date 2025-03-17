@@ -194,6 +194,7 @@ def main_layout():
         dcc.Location(id='url', refresh=False),
         html.Div(id='page-content'),
         dcc.Store(id='code-click', data=None),
+        dcc.Store(id="reset-tap-data", data=0),
         html.Div(className="header", children=[
             html.Img(src=app.get_asset_url('RA-viz.png'), className="logo"),
             html.H1("RA-viz: Relational Algebra Visualizer"),
@@ -443,29 +444,34 @@ def display_schema_info(selected_db):
 
 @app.callback(
     [Output('cytoscape-tree', 'elements', allow_duplicate=True),
+     Output('cytoscape-tree', 'selectedNodeData', allow_duplicate=True), 
      Output('tree-store', 'data', allow_duplicate=True),
      Output('db-path-store', 'data', allow_duplicate=True),
      Output('error-div', 'children', allow_duplicate=True),
      Output('error-div', 'style', allow_duplicate=True),
-     Output('node-table-placeholder', 'children', allow_duplicate=True)],
+     Output('node-table-placeholder', 'children', allow_duplicate=True),
+     Output('row-count', 'data', allow_duplicate=True),
+     Output('current-page', 'data', allow_duplicate=True),
+     Output('reset-tap-data', 'data', allow_duplicate=True)],
     [Input('submit-btn', 'n_clicks'),
      Input('db-dropdown', 'value')],
-    [State('query-input', 'value')],
+    [State('query-input', 'value'),
+     State('reset-tap-data', 'data')],
     prevent_initial_call=True
 )
-def update_tree(n_clicks, selected_db, query):
+def update_tree(n_clicks, selected_db, query, reset_counter):
     ctx = dash.callback_context
     if ctx.triggered and ctx.triggered[0]['prop_id'].startswith('db-dropdown'):
-        return [], {}, "", "", {'display': 'none'}, "Click node to see info."
+        return [], None, {}, "", "", {'display': 'none'}, "Click node to see info.", 0, 0, reset_counter + 1
 
     if n_clicks is None:
-        return [], {}, "", "", {'display': 'none'}, "Click node to see info."
+        return [], None, {}, "", "", {'display': 'none'}, "Click node to see info.", 0, 0, reset_counter + 1
 
     if not selected_db:
-        return [], {}, "", "Please select a database.", {'display': 'block'}, "Click node to see info."
+        return [], None, {}, "", "Please select a database.", {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
 
     if not query:
-        return [], {}, "", "Please enter a query.", {'display': 'block'}, "Click node to see info."
+        return [], None, {}, "", "Please enter a query.", {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
 
     if n_clicks and selected_db and query:
         try:
@@ -476,18 +482,23 @@ def update_tree(n_clicks, selected_db, query):
             json_tree = generate_tree_from_query(query, db, node_counter=[0])
 
             if 'error' in json_tree:
-                raise Exception(f"Error in query: {json_tree['error']}.")
+                return [], None, {}, "", f"Error in query: {json_tree['error']}.", {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
 
             elements = json_to_cytoscape_elements(json_tree)
 
             db.close()
-
-            # Clear the node table placeholder when a new query is submitted
-            return elements, json_tree, db_path, "", {'display': 'none'}, "Click node to see info."
+            return elements, None, json_tree, db_path, "", {'display': 'none'}, "Click node to see info.", 0, 0, reset_counter + 1
 
         except Exception as e:
-            # Show the error message
-            return [], {}, str(e), str(e), {'display': 'block'}, "Click node to see info."
+            return [], None, {}, "", str(e), {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
+
+@app.callback(
+    Output('cytoscape-tree', 'tapNodeData', allow_duplicate=True),
+    [Input('reset-tap-data', 'data')],
+    prevent_initial_call=True
+)
+def reset_tap_node_data(reset_counter):
+    return None
 
 
 @app.callback(
@@ -495,16 +506,22 @@ def update_tree(n_clicks, selected_db, query):
      Output('row-count', 'data')],
     [Input('cytoscape-tree', 'tapNodeData'),
      Input('db-dropdown', 'value'),
-     Input('current-page', 'data')],
+     Input('current-page', 'data'),
+     Input('reset-tap-data', 'data')],
     [State('tree-store', 'data'), State('db-path-store', 'data')],
     prevent_initial_call=True
 )
-def display_node_info(node_data, selected_db, current_page, json_tree, db_path):
+def display_node_info(node_data, selected_db, current_page, reset_counter, json_tree, db_path):
     ctx = dash.callback_context
 
     if ctx.triggered and ctx.triggered[0]['prop_id'].startswith('db-dropdown'):
         return "Click node to see info.", 0
-
+    
+    trigger = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
+    
+    if trigger == 'reset-tap-data':
+        return "Click node to see info.", 0
+    
     if node_data:
         try:
             node_id = node_data['id']
