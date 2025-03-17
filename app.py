@@ -13,12 +13,12 @@ app = dash.Dash(__name__)
 
 
 def get_readme_content():
-    with open('instructions.md', 'r') as file:
+    with open('assets/instructions.md', 'r') as file:
         return file.read()
 
 
 def get_queries_content():
-    with open('queries.md', 'r') as file:
+    with open('assets/queries.md', 'r') as file:
         return file.read()
 
 
