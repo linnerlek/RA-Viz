@@ -2,7 +2,7 @@
 
 This application is a `Dash`-based tool for visualizing relational algebra queries. It includes an interactive graphical interface for constructing and displaying relational operations using `dash-cytoscape`.
 
-<img width="1000" alt="Screenshot 2025-03-07 at 11 29 52 AM" src="https://github.com/user-attachments/assets/a8b42062-95c0-41d3-8fa2-6d2a7a7c0901" />
+<img width="700" alt="Screenshot 2025-03-07 at 11 29 52 AM" src="https://github.com/user-attachments/assets/9aeb6165-99fc-4c91-be07-0d9ef0d2ad9a" />
 
 
 ## Installation
