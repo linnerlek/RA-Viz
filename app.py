@@ -16,6 +16,7 @@ cyto.load_extra_layouts()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+
 def get_readme_content():
     readme_path = os.path.join('assets', 'instructions.md')
     with open(readme_path, 'r') as file:
@@ -160,24 +161,9 @@ def create_table_from_node_info(node_info):
     columns = node_info['columns']
     rows = node_info['rows']
 
-    unique_columns = []
-    seen_columns = set()
-
-    for col in columns:
-        base_col = col.split('.')[-1].lower()
-        if base_col not in seen_columns:
-            unique_columns.append(col)
-            seen_columns.add(base_col)
-
-    table_header = [html.Th(col) for col in unique_columns]
-
-    col_indices = [columns.index(col) for col in unique_columns]
-    filtered_rows = [
-        [row[idx] for idx in col_indices] for row in rows
-    ]
-
-    table_body = [html.Tr([html.Td(cell) for cell in row])
-                  for row in filtered_rows]
+    # Do not deduplicate columns; preserve order and duplicates as returned
+    table_header = [html.Th(col) for col in columns]
+    table_body = [html.Tr([html.Td(cell) for cell in row]) for row in rows]
 
     return html.Table(
         className='classic-table',
@@ -694,5 +680,5 @@ clientside_callback(
 
 if __name__ == '__main__':
     app.layout = layout
-    #app.run_server(debug=True)
+    # app.run_server(debug=True)
     app.run(host='0.0.0.0', port=5020)
