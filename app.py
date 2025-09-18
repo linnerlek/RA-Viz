@@ -1,3 +1,5 @@
+from dash import dcc, html, callback, clientside_callback
+import sys
 from doctest import debug
 import dash
 from dash import dcc, html
@@ -11,14 +13,23 @@ DB_FOLDER = 'databases'
 
 app = dash.Dash(__name__)
 
+cyto.load_extra_layouts()
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+
+
 
 def get_readme_content():
-    with open('assets/instructions.md', 'r') as file:
+    readme_path = os.path.join('assets', 'instructions.md')
+    with open(readme_path, 'r') as file:
         return file.read()
 
 
 def get_queries_content():
-    with open('assets/queries.md', 'r') as file:
+    queries_path = os.path.join('assets', 'queries.md')
+    with open(queries_path, 'r') as file:
         return file.read()
 
 
@@ -65,7 +76,8 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
                 if item[0] == 'id':
                     agg_info.append(f"{item[1]} AS {renamed_columns[i]}")
                 elif item[0] == 'agg':
-                    agg_info.append(f"{item[1][0]}({item[1][1]}) AS {renamed_columns[i]}")
+                    agg_info.append(
+                        f"{item[1][0]}({item[1][1]}) AS {renamed_columns[i]}")
 
         node_label = f"Aggregate[\n{', '.join(agg_info)}]"
         if agg_groupby_list:
@@ -75,6 +87,26 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
                 f"{cond[1]} {cond[2]} {cond[4]}" for cond in agg_having_condition
             ]
             node_label += f"\nHAVING {' and '.join(having_info)}"
+
+    # Insert newlines into long labels for better wrapping
+    def insert_newlines(label, max_len=22):
+        words = label.split(' ')
+        lines = []
+        current = ''
+        for word in words:
+            if len(current) + len(word) + 1 > max_len:
+                lines.append(current)
+                current = word
+            else:
+                if current:
+                    current += ' '
+                current += word
+        if current:
+            lines.append(current)
+        return '\n'.join(lines)
+
+    node_label = '\n'.join([insert_newlines(line)
+                           for line in node_label.split('\n')])
 
     if y not in level_positions:
         level_positions[y] = []
@@ -91,7 +123,11 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
     level_positions[y].append(x)
 
     elements.append({
-        'data': {'id': node_id, 'label': node_label},
+        'data': {
+            'id': node_id,
+            'label': node_label,
+            'node_type': json_tree.get('node_type', 'Unknown')
+        },
         'position': {'x': x, 'y': y}
     })
 
@@ -157,6 +193,7 @@ def create_table_from_node_info(node_info):
     )
 
 
+# linn was here 091725
 cytoscape_stylesheet = [
     {
         'selector': 'node',
@@ -169,6 +206,12 @@ cytoscape_stylesheet = [
             'white-space': 'pre',
             'background-color': '#0071CE',
             'text-transform': 'none'
+        }
+    },
+    {
+        'selector': "node[node_type='relation']",
+        'style': {
+            'background-color': '#2ecc40',  # green for root data nodes
         }
     },
     {
@@ -189,18 +232,47 @@ cytoscape_stylesheet = [
 # ------------------ HTML ------------------
 
 
-def main_layout():
-    return html.Div([
-        dcc.Location(id='url', refresh=False),
-        html.Div(id='page-content'),
-        dcc.Store(id='code-click', data=None),
-        dcc.Store(id="reset-tap-data", data=0),
-        html.Div(className="header", children=[
-            html.Img(src=app.get_asset_url('RA-viz.png'), className="logo"),
-            html.H1("RA-viz: Relational Algebra Visualizer"),
-        ]),
-        html.Div(id="app-container", children=[
-            html.Div(id="left-section", className="left-section", children=[
+legend = html.Div(
+    id="legend-container",
+    style={
+        'display': 'flex',
+        'flexDirection': 'row',
+        'alignItems': 'center',
+        'gap': '10px',
+        'margin': '5px 0 5px 0',
+        'padding': '8px',
+        'border': '0',
+        'borderRadius': '8px',
+        'width': 'fit-content',
+    },
+    children=[
+        html.Div([
+            html.Div(style={'width': '22px', 'height': '22px', 'backgroundColor': '#2ecc40',
+                     'display': 'inline-block', 'borderRadius': '50%', 'marginRight': '8px'}),
+            html.Span('Relation', style={'verticalAlign': 'middle'})
+        ], style={'display': 'flex', 'alignItems': 'center'}),
+        html.Div([
+            html.Div(style={'width': '22px', 'height': '22px', 'backgroundColor': '#0071CE',
+                     'display': 'inline-block', 'borderRadius': '50%', 'marginRight': '8px'}),
+            html.Span('Operator', style={'verticalAlign': 'middle'})
+        ], style={'display': 'flex', 'alignItems': 'center'}),
+        html.Div([
+            html.Div(style={'width': '22px', 'height': '22px', 'backgroundColor': '#CC0000',
+                     'display': 'inline-block', 'borderRadius': '50%', 'marginRight': '8px'}),
+            html.Span('Selected', style={'verticalAlign': 'middle'})
+        ], style={'display': 'flex', 'alignItems': 'center'}),
+    ]
+)
+
+layout = html.Div([
+    html.Div(id='page-content'),
+    dcc.Store(id='code-click', data=None),
+    dcc.Store(id="reset-tap-data", data=0),
+    html.Div(className="header", children=[
+        html.H1("RA-viz: Relational Algebra Visualizer"),
+    ]),
+    html.Div(id="app-container", children=[
+        html.Div(id="left-section", className="left-section", children=[
                 html.Div(className="input-container", children=[
                     html.Div(className="header-dropdown-container", children=[
                         html.H3(id="db-name-header"),
@@ -212,84 +284,89 @@ def main_layout():
                     html.Button("Submit", id="submit-btn"),
                 ]),
 
-                dcc.Store(id='tree-store'),
-                dcc.Store(id='db-path-store'),
-                dcc.Store(id="current-page", data=0),
-                dcc.Store(id="prev-clicks", data=0),
-                dcc.Store(id="next-clicks", data=0),
-                dcc.Store(id="row-count", data=0),
+            dcc.Store(id='tree-store'),
+            dcc.Store(id='db-path-store'),
+            dcc.Store(id="current-page", data=0),
+            dcc.Store(id="prev-clicks", data=0),
+            dcc.Store(id="next-clicks", data=0),
+            dcc.Store(id="row-count", data=0),
 
 
-                html.Div(className="tree-table-container", children=[
-                    cyto.Cytoscape(
-                        id='cytoscape-tree',
-                        layout={'name': 'preset'},
-                        elements=[],
-                        stylesheet=cytoscape_stylesheet
-                    ),
-                    html.Div(id="tree-table-divider", className="divider"),
-                    html.Div(
-                        className="table-and-pagination",
-                        children=[
-                            html.Div(id="node-table-placeholder",
-                                     children="Click node to see info"),
-                            html.Div(
-                                [
-                                    html.Button(
-                                        "Previous", id="prev-page-btn", n_clicks=0),
-                                    html.Button(
-                                        "Next", id="next-page-btn", n_clicks=0)
-                                ],
-                                className="pagination-buttons"
-                            ),
-                        ],
-                    ),
-                ]),
+            html.Div(className="tree-table-container", children=[
+                cyto.Cytoscape(
+                    id='cytoscape-tree',
+                    layout={
+                        'name': 'dagre',
+                        'rankSep': 120,   # vertical separation between ranks
+                        'nodeSep': 200,   # horizontal separation between nodes
+                        'edgeSep': 50,    # separation between edges
+                        'rankDir': 'TB',  # top-to-bottom
+                        'padding': 50
+                    },
+                    elements=[],
+                    stylesheet=cytoscape_stylesheet,
+                    style={'width': '100%', 'height': '100%'}
+                ),
+                html.Div(id="tree-table-divider", className="divider"),
+                html.Div(
+                    className="table-and-pagination",
+                    children=[
+                        html.Div(id="node-table-placeholder",
+                                 children="Click node to see info"),
+                        html.Div(
+                            [
+                                html.Button(
+                                    "Previous", id="prev-page-btn", n_clicks=0),
+                                html.Button(
+                                    "Next", id="next-page-btn", n_clicks=0)
+                            ],
+                            className="pagination-buttons"
+                        ),
+                        legend,
+                    ],
+                ),
             ]),
-            html.Div(id="divider", className="divider"),
+        ]),
+        html.Div(id="divider", className="divider"),
 
-            html.Div(id="right-section", className="right-section", children=[
-                html.Div(id="documentation-placeholder", children=[
-                    html.A("Documentation",
-                           id="installation-info-link", href="#"),
-                    html.A("Queries",
-                           id="open-query-modal-btn", href="#"),
+        html.Div(id="right-section", className="right-section", children=[
+            html.Div(id="documentation-placeholder", children=[
+                    html.Button("Documentation",
+                                id="installation-info-link", n_clicks=0, className="modal-trigger"),
+                    html.Button("Examples",
+                                id="open-query-modal-btn", n_clicks=0, className="modal-trigger"),
 
-                ]),
-                html.Details(id="schema-container", open=True, children=[
-                    html.Summary("Schema Information"),
-                    html.Div(id="schema-info",
-                             children="Schema Info Placeholder")
-                ])
             ]),
-            html.Div(id="modal", className="modal", style={"display": "none"}, children=[
-                html.Div(className="modal-content", children=[
+            html.Details(id="schema-container", open=True, children=[
+                html.Summary("Schema Information"),
+                html.Div(id="schema-info",
+                         children="Schema Info Placeholder")
+            ])
+        ]),
+        html.Div(id="modal", className="modal", style={"display": "none"}, children=[
+            html.Div(className="modal-content", children=[
                     html.Div(id="button-container", children=[
                         html.Button("Close", id="close-modal-btn")
                     ]),
-                    html.Div(id="modal-body", className="markdown-content"),
-                ])
-            ]),
-            html.Div(id="query-modal", className="modal", style={"display": "none"}, children=[
-                html.Div(className="modal-content", children=[
+                html.Div(id="modal-body", className="markdown-content"),
+            ])
+        ]),
+        html.Div(id="query-modal", className="modal", style={"display": "none"}, children=[
+            html.Div(className="modal-content", children=[
                     html.Div(id="query-button-container", children=[
                         html.Button("Close", id="close-query-modal-btn")
                     ]),
-                    html.Div(id="query-modal-body",
-                             className="markdown-content"),
-                ]),
+                html.Div(id="query-modal-body",
+                         className="markdown-content"),
             ]),
         ]),
-        html.Div(id='error-div')
-    ])
-
-
-app.title = "RA-viz"
-app.layout = main_layout()
+    ]),
+    html.Div(id='error-div')
+])
 
 
 # ------------------ Callbacks ------------------
-@app.callback(
+@callback(
     [Output("modal", "style"),
      Output("modal-body", "children")],
     [Input("installation-info-link", "n_clicks"),
@@ -309,7 +386,7 @@ def toggle_modal(install_clicks, close_clicks):
     return {"display": "none"}, ""
 
 
-@app.callback(
+@callback(
     [Output("query-modal", "style"),
      Output("query-modal-body", "children")],
     [Input("open-query-modal-btn", "n_clicks"),
@@ -369,9 +446,7 @@ def toggle_query_modal(open_clicks, close_clicks, selected_db):
     return {"display": "none"}, ""
 
 
-
-
-@app.callback(
+@callback(
     [Output("db-name-header", "children"),
      Output("query-input", "value")],
     [Input("db-dropdown", "value"),
@@ -407,7 +482,7 @@ def update_db_or_insert_query(selected_db, query_block_clicks, modal_children):
     return dash.no_update, dash.no_update
 
 
-@app.callback(
+@callback(
     Output('schema-info', 'children'),
     [Input('db-dropdown', 'value')]
 )
@@ -442,9 +517,9 @@ def display_schema_info(selected_db):
         return f"Error: {str(e)}"
 
 
-@app.callback(
+@callback(
     [Output('cytoscape-tree', 'elements', allow_duplicate=True),
-     Output('cytoscape-tree', 'selectedNodeData', allow_duplicate=True), 
+     Output('cytoscape-tree', 'selectedNodeData', allow_duplicate=True),
      Output('tree-store', 'data', allow_duplicate=True),
      Output('db-path-store', 'data', allow_duplicate=True),
      Output('error-div', 'children', allow_duplicate=True),
@@ -492,7 +567,8 @@ def update_tree(n_clicks, selected_db, query, reset_counter):
         except Exception as e:
             return [], None, {}, "", str(e), {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
 
-@app.callback(
+
+@callback(
     Output('cytoscape-tree', 'tapNodeData', allow_duplicate=True),
     [Input('reset-tap-data', 'data')],
     prevent_initial_call=True
@@ -501,7 +577,7 @@ def reset_tap_node_data(reset_counter):
     return None
 
 
-@app.callback(
+@callback(
     [Output('node-table-placeholder', 'children', allow_duplicate=True),
      Output('row-count', 'data')],
     [Input('cytoscape-tree', 'tapNodeData'),
@@ -516,12 +592,13 @@ def display_node_info(node_data, selected_db, current_page, reset_counter, json_
 
     if ctx.triggered and ctx.triggered[0]['prop_id'].startswith('db-dropdown'):
         return "Click node to see info.", 0
-    
-    trigger = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
-    
+
+    trigger = ctx.triggered[0]['prop_id'].split(
+        '.')[0] if ctx.triggered else None
+
     if trigger == 'reset-tap-data':
         return "Click node to see info.", 0
-    
+
     if node_data:
         try:
             node_id = node_data['id']
@@ -555,9 +632,10 @@ def display_node_info(node_data, selected_db, current_page, reset_counter, json_
                     html.Tbody(table_body)
                 ]
             )
-            
+
             return html.Div([
-                html.P(f"Number of tuples: {total_rows}", className="tuple-count"),
+                html.P(f"Number of tuples: {total_rows}",
+                       className="tuple-count"),
                 result_table
             ]), total_rows
 
@@ -567,31 +645,32 @@ def display_node_info(node_data, selected_db, current_page, reset_counter, json_
     return "Click node to see info.", 0
 
 
-@app.callback(
+@callback(
     [Output("current-page", "data", allow_duplicate=True),
      Output("prev-clicks", "data", allow_duplicate=True),
      Output("next-clicks", "data", allow_duplicate=True)],
     [Input("prev-page-btn", "n_clicks"),
      Input("next-page-btn", "n_clicks"),
-     Input('cytoscape-tree', 'tapNodeData'), 
-     Input('submit-btn', 'n_clicks')],    
+     Input('cytoscape-tree', 'tapNodeData'),
+     Input('submit-btn', 'n_clicks')],
     [State("current-page", "data"),
      State("prev-clicks", "data"),
      State("next-clicks", "data"),
      State("row-count", "data")],
     prevent_initial_call=True
 )
-def update_page(prev_clicks, next_clicks, node_data, submit_clicks, 
+def update_page(prev_clicks, next_clicks, node_data, submit_clicks,
                 current_page, last_prev_clicks, last_next_clicks, row_count):
     ctx = dash.callback_context
-    trigger = ctx.triggered[0]['prop_id'].split('.')[0] if ctx.triggered else None
-    
+    trigger = ctx.triggered[0]['prop_id'].split(
+        '.')[0] if ctx.triggered else None
+
     if trigger in ['cytoscape-tree', 'submit-btn']:
         return 0, 0, 0
-    
+
     rows_per_page = 8
     max_page = max(0, (row_count - 1) // rows_per_page) if row_count else 0
-    
+
     if trigger == 'prev-page-btn' and prev_clicks > last_prev_clicks:
         new_page = max(0, current_page - 1)
     elif trigger == 'next-page-btn' and next_clicks > last_next_clicks:
@@ -600,11 +679,11 @@ def update_page(prev_clicks, next_clicks, node_data, submit_clicks,
         new_page = current_page
 
     new_page = max(0, min(new_page, max_page))
-    
+
     return new_page, prev_clicks, next_clicks
 
 
-app.clientside_callback(
+clientside_callback(
     """
     function(rowCount) {
         if (rowCount > 8) {
@@ -618,7 +697,7 @@ app.clientside_callback(
     [Input("row-count", "data")]
 )
 
-
 if __name__ == '__main__':
+    app.layout = layout
     #app.run_server(debug=True)
     app.run_server(host='0.0.0.0', port=5020)
