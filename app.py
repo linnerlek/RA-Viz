@@ -17,10 +17,6 @@ cyto.load_extra_layouts()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-
-
-
 def get_readme_content():
     readme_path = os.path.join('assets', 'instructions.md')
     with open(readme_path, 'r') as file:
@@ -193,7 +189,7 @@ def create_table_from_node_info(node_info):
     )
 
 
-# linn was here 091725
+# linn was here 042325
 cytoscape_stylesheet = [
     {
         'selector': 'node',
