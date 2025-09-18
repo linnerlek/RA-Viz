@@ -1,6 +1,5 @@
 from dash import dcc, html, callback, clientside_callback
 import sys
-from doctest import debug
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State, ALL
