@@ -7,6 +7,7 @@ import dash_cytoscape as cyto
 import os
 from RAP import *
 import re
+import traceback
 
 DB_FOLDER = 'databases'
 
@@ -37,9 +38,6 @@ def get_db_files():
 def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_counter=[0], x=0, y=0, x_offset=150, y_offset=100, min_separation=50, level_positions=None):
     if elements is None:
         elements = []
-
-    if level_positions is None:
-        level_positions = {}
 
     if json_tree is None:
         return elements
@@ -104,27 +102,12 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
     node_label = '\n'.join([insert_newlines(line)
                            for line in node_label.split('\n')])
 
-    if y not in level_positions:
-        level_positions[y] = []
-
-    overlap_detected = False
-    for pos in level_positions[y]:
-        if abs(pos - x) < min_separation:
-            overlap_detected = True
-            break
-
-    if overlap_detected and parent_id:
-        y += y_offset
-
-    level_positions[y].append(x)
-
     elements.append({
         'data': {
             'id': node_id,
             'label': node_label,
             'node_type': json_tree.get('node_type', 'Unknown')
-        },
-        'position': {'x': x, 'y': y}
+        }
     })
 
     if parent_id:
@@ -136,22 +119,18 @@ def json_to_cytoscape_elements(json_tree, parent_id=None, elements=None, node_co
 
     if json_tree.get('left_child') and json_tree.get('right_child'):
         json_to_cytoscape_elements(
-            json_tree['left_child'], node_id, elements, node_counter, x -
-            x_offset, y + y_offset, x_offset, y_offset, min_separation, level_positions
+            json_tree['left_child'], node_id, elements, node_counter
         )
         json_to_cytoscape_elements(
-            json_tree['right_child'], node_id, elements, node_counter, x +
-            x_offset, y + y_offset, x_offset, y_offset, min_separation, level_positions
+            json_tree['right_child'], node_id, elements, node_counter
         )
     elif json_tree.get('left_child'):
         json_to_cytoscape_elements(
-            json_tree['left_child'], node_id, elements, node_counter, x, y +
-            y_offset, x_offset, y_offset, min_separation, level_positions
+            json_tree['left_child'], node_id, elements, node_counter
         )
     elif json_tree.get('right_child'):
         json_to_cytoscape_elements(
-            json_tree['right_child'], node_id, elements, node_counter, x, y +
-            y_offset, x_offset, y_offset, min_separation, level_positions
+            json_tree['right_child'], node_id, elements, node_counter
         )
 
     return elements
@@ -546,6 +525,8 @@ def update_tree(n_clicks, selected_db, query, reset_counter):
             return elements, None, json_tree, db_path, "", {'display': 'none'}, "Click node to see info.", 0, 0, reset_counter + 1
 
         except Exception as e:
+            # Add this line to print the full stack trace to the server log
+            print(traceback.format_exc())
             return [], None, {}, "", str(e), {'display': 'block'}, "Click node to see info.", 0, 0, reset_counter + 1
 
 

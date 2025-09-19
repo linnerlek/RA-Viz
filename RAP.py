@@ -1234,28 +1234,29 @@ def tree_to_json(node, db, node_counter=[0]):
         'relation_name': relation_name,
         'left_child': tree_to_json(node.get_left_child(), db, node_counter),
         'right_child': tree_to_json(node.get_right_child(), db, node_counter),
-        'attributes': node.get_attributes()
+        'attributes': node.get_attributes(),
+        'domains': node.get_domains(),
     }
 
-    if node.get_node_type() == 'project':
+    # Always include columns if present
+    if node.get_columns() is not None:
         node_json['columns'] = node.get_columns()
-    elif node.get_node_type() == 'rename':
-        node_json['new_columns'] = node.get_columns()
-    elif node.get_node_type() == 'select':
+    # Always include conditions if present
+    if node.get_conditions() is not None:
         node_json['conditions'] = node.get_conditions()
-    elif node.get_node_type() == 'join':
+    # Always include join_columns if present
+    if node.get_join_columns() is not None:
         node_json['join_columns'] = node.get_join_columns()
-        node_json['attributes'] = node.get_attributes()
-    elif node.get_node_type() == 'times':
-        # For times, show the explicit column names as in the backend
-        node_json['columns'] = node.get_attributes(
-        ) if node.get_attributes() else []
 
+    # For rename, also include new_columns for compatibility
+    if node.get_node_type() == 'rename' and node.get_columns() is not None:
+        node_json['new_columns'] = node.get_columns()
+
+    # For aggregates, always include these fields if present
     if node.get_node_type() in ['aggregate1', 'aggregate2', 'aggregate3']:
         node_json['aggregate_project_list'] = node.get_aggregate_project_list()
         node_json['aggregate_groupby_list'] = node.get_aggregate_groupby_list()
         node_json['aggregate_having_condition'] = node.get_aggregate_having_condition()
-        node_json['columns'] = node.get_columns()  # Include renamed columns
 
     return node_json
 
@@ -1305,18 +1306,15 @@ def json_to_node(json_node):
                 json_to_node(json_node.get('left_child')),
                 json_to_node(json_node.get('right_child')))
 
-    if node.get_node_type() == 'rename':
-        if 'new_columns' in json_node:
-            new_cols = json_node['new_columns']
-            node.set_columns(new_cols)
-            node.set_relation_name(new_cols[0])
-
+    # Set all relevant fields
     node.set_relation_name(json_node.get('relation_name'))
     node.set_attributes(json_node.get('attributes'))
+    node.set_domains(json_node.get('domains'))
 
     if 'columns' in json_node:
         node.set_columns(json_node['columns'])
-
+    if 'new_columns' in json_node:
+        node.set_columns(json_node['new_columns'])
     if 'conditions' in json_node:
         node.set_conditions(json_node['conditions'])
     if 'join_columns' in json_node:
@@ -1329,8 +1327,6 @@ def json_to_node(json_node):
             json_node.get('aggregate_groupby_list', []))
         node.set_aggregate_having_condition(
             json_node.get('aggregate_having_condition', []))
-        if 'columns' in json_node:
-            node.set_columns(json_node['columns'])
 
     return node
 
