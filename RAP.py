@@ -1036,9 +1036,8 @@ def generateSQL(tree, db):
             left_type = condition[0]
             right_type = condition[3]
 
-            # Case-insensitive string comparison for = and LIKE
-            if op in ['=', 'LIKE'] and (left_type == 'col' or left_type == 'str') and (right_type == 'col' or right_type == 'str'):
-                # If either side is a string, use LOWER()
+            # Case-insensitive string comparison for ALL operators if either side is string or column
+            if (left_type == 'col' or left_type == 'str') and (right_type == 'col' or right_type == 'str'):
                 if left_type == 'col':
                     c1_sql = f"LOWER({c1})"
                 else:
