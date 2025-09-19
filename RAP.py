@@ -1031,15 +1031,30 @@ def generateSQL(tree, db):
         query = f"SELECT * FROM ({lquery}) {tree.get_left_child().get_relation_name()} WHERE "
         for condition in tree.get_conditions():
             c1 = condition[1]
-            if condition[0] == 'str':
-                c1 = f"'{c1}'"
             c4 = condition[4]
-            if condition[3] == 'str':
-                c4 = f"'{c4}'"
-            if condition[2] == 'LIKE':
-                query += f"{c1} LIKE {c4} AND "
+            op = condition[2]
+            left_type = condition[0]
+            right_type = condition[3]
+
+            # Case-insensitive string comparison for = and LIKE
+            if op in ['=', 'LIKE'] and (left_type == 'col' or left_type == 'str') and (right_type == 'col' or right_type == 'str'):
+                # If either side is a string, use LOWER()
+                if left_type == 'col':
+                    c1_sql = f"LOWER({c1})"
+                else:
+                    c1_sql = f"LOWER('{c1}')"
+                if right_type == 'col':
+                    c4_sql = f"LOWER({c4})"
+                else:
+                    c4_sql = f"LOWER('{c4}')"
+                query += f"{c1_sql} {op} {c4_sql} AND "
             else:
-                query += f"{c1} {condition[2]} {c4} AND "
+                # Fallback: original logic
+                if left_type == 'str':
+                    c1 = f"'{c1}'"
+                if right_type == 'str':
+                    c4 = f"'{c4}'"
+                query += f"{c1} {op} {c4} AND "
 
         query = query[:-5]
         # print("Generated SQL Query (select):", query)
